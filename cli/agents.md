@@ -14,7 +14,7 @@
 - Обязательные команды:
   - `zemi hello`;
   - `zemi help`;
-  - `zemi install`;
+  - `zemi cli install`;
   - `zemi instance create`;
   - `zemi winpython download`;
   - `zemi vscode reset-python-settings`.
@@ -25,8 +25,8 @@
 - Примеры:
   - `instance_create.ps1`;
   - `winpython_download.ps1`;
-  - `vscode_reset_python_settings.ps1`.
-- Для команды без группы допустимо имя действия, например `install.ps1`.
+  - `vscode_reset_python_settings.ps1`;
+  - `cli_install.ps1`.
 - При переименовании сразу обновляй диспетчер, документацию и текстовые ссылки.
 
 ## Простота
@@ -46,7 +46,7 @@
 - Никогда не привязывай расположение CLI к ZEMI Instance.
 - Определяй корень CLI через `$PSScriptRoot`.
 - Не изменяй системный или пользовательский Windows `PATH` и не пиши в реестр.
-- `zemi install` настраивает только VS Code: добавляет каталог CLI в
+- `zemi cli install` настраивает только VS Code: добавляет каталог CLI в
   `terminal.integrated.env.windows.PATH` пользовательского `settings.json`.
 - Определяй запущенный `Code.exe`. Если VS Code не запущен, выведи красную ошибку.
 - Для portable VS Code используй `data\user-data\User`; для обычного VS Code —

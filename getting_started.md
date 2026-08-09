@@ -74,15 +74,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\vscode_reset_python_se
 
 ## 4. Настройка ZEMI CLI внутри VS Code
 
-ZEMI CLI может находиться в любом месте на диске. Чтобы его PowerShell-скрипты
-были доступны во всех новых встроенных терминалах portable VS Code, сначала
+ZEMI CLI может находиться в любом месте на диске. Чтобы его команды были
+доступны во всех новых встроенных терминалах VS Code, сначала
 запустите VS Code, затем выполните из каталога ZEMI CLI:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+.\zemi.cmd cli install
 ```
 
-Скрипт найдёт запущенный portable VS Code и добавит каталог ZEMI CLI только в
+Скрипт найдёт запущенный VS Code и добавит каталог ZEMI CLI только в
 `terminal.integrated.env.windows.PATH` его пользовательских настроек. Windows
 `PATH` не изменяется.
 
