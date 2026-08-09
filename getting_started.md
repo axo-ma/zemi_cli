@@ -12,26 +12,76 @@
 4. **7-Zip** — требуется для распаковки архива WinPython.
 5. Доступ в интернет — для загрузки WinPython и клонирования репозитория.
 
+> **Обозначение `@inst`.** В этом руководстве `@inst` означает путь к корню
+> конкретного ZEMI Instance. Это не буквальное имя каталога. Например, если
+> Instance находится в `D:\ZEMI\experiment-01`, то `@inst/_tmp` означает
+> `D:\ZEMI\experiment-01\_tmp`.
 
 
-## 1. Создание экспериментального ZEMI Instance
 
-TODO: git clone zemi cli
+## 1. Развёртывание ZEMI CLI
 
-Чтобы создать папку для Zemi Instance запуcтите:
+Выберите любое место на диске и клонируйте репозиторий ZEMI CLI:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File .\instance_create.ps1
+git clone https://github.com/axo-ma/zemi_cli.git
+cd .\zemi_cli
 ```
 
-## 2. Загрузка WinPython 3.12
-
-Запустите следующий скипт чтобы скачать WinPython:
+Запустите VS Code. Должна быть открыта только одна установка VS Code. Затем из
+каталога ZEMI CLI выполните:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File .\winpython_download.ps1
+.\zemi.cmd cli install
+```
+
+Команда добавит каталог ZEMI CLI только в `terminal.integrated.env.windows.PATH` пользовательских настроек VS Code.
+
+
+Закройте существующие встроенные терминалы VS Code и создайте новый терминал.
+Проверьте глобальную команду:
+
+```powershell
+zemi hello
+```
+
+Ожидаемый результат:
+
+```text
+Hello from ZEMI!
+```
+
+Посмотреть доступные команды можно через `zemi help`.
+
+Если VS Code раньше использовал другие Python-окружения или ядра Jupyter,
+сбросьте старые настройки:
+
+```powershell
+zemi vscode reset-python-settings
+```
+
+После команды перезапустите VS Code. Для новой установки этот шаг можно
+пропустить: VS Code самостоятельно обнаружит единственную `.venv` в корне
+компонента.
+
+## 2. Создание экспериментального ZEMI Instance
+
+На одной машине можно создать произвольное количество независимых ZEMI Instance.
+Для каждого нового Instance повторно выполните команду создания и выберите
+отдельный корневой каталог.
+
+Чтобы создать каталог ZEMI Instance, запустите:
+
+```powershell
+zemi instance create
+```
+
+## 3. Загрузка WinPython 3.12
+
+Чтобы скачать WinPython, запустите:
+
+```powershell
+zemi winpython download
 ```
 
 Как альтернатива, можете скачать WinPython самостоятельно
@@ -52,57 +102,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 Ожидаемая версия: `Python 3.12.10`.
 
-## 3. Сброс Python и Jupyter в VS Code
-
-В дальнейшем предполагается что внутри VSCode доступны только одно python окружение, которое находится в папке .venv текущего проекта.
-
-Если ваш VSCode прямо или косвенно был настроен на использвоание каких либо python сред, выполните сброс Python и Jupyter в VS Code, по инструкции ниже. Если VSCode не использовался раньше на вашей машине для работы с python, это шаг можно опустить 
-
-Полностью закройте VS Code. Из внешнего PowerShell запустите одной строкой:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\vscode_reset_python_settings.ps1 -InstancePath "<ZEMI Instance>"
-```
-
-Для portable VS Code добавьте `-UserDataPath "<VS Code>\data\user-data\User"`.
-
-Скрипт очищает Python/Jupyter-настройки профиля VS Code и `.vscode` в деревьях
-компонентов. Непосредственные служебные каталоги Instance с именем `_...` не
-сканируются. `.venv`, WinPython, пакеты, ноутбуки и пользовательские kernelspec
-не удаляются. Резервная копия не создаётся. После открытия проекта VS Code заново
-обнаружит локальную `.venv`. Предложение установить Python через `uv` отключается.
-
-## 4. Настройка ZEMI CLI внутри VS Code
-
-ZEMI CLI может находиться в любом месте на диске. Чтобы его команды были
-доступны во всех новых встроенных терминалах VS Code, сначала
-запустите VS Code, затем выполните из каталога ZEMI CLI:
-
-```powershell
-.\zemi.cmd cli install
-```
-
-Скрипт найдёт запущенный VS Code и добавит каталог ZEMI CLI только в
-`terminal.integrated.env.windows.PATH` его пользовательских настроек. Windows
-`PATH` не изменяется.
-
-Закройте существующие встроенные терминалы VS Code и создайте новый терминал.
-Проверьте ZEMI CLI:
-
-```powershell
-zemi hello
-```
-
-Ожидаемый результат:
-
-```text
-Hello from ZEMI!
-```
-
-Список доступных команд:
-
-```powershell
-zemi help
-```
-
-## 5. Создание ZEMI компонента из шаблона
+## 4. Создание ZEMI компонента из шаблона
