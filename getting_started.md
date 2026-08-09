@@ -72,12 +72,30 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\reset_vscode_python.ps
 не удаляются. Резервная копия не создаётся. После открытия проекта VS Code заново
 обнаружит локальную `.venv`. Предложение установить Python через `uv` отключается.
 
-## 3. Настройка Zemi Сli внутри VS Code
+## 4. Настройка ZEMI CLI внутри VS Code
 
-Для удобства работы необходимо чтобы zemi cli был доступен глобально внутри VSCode
+ZEMI CLI может находиться в любом месте на диске. Чтобы его PowerShell-скрипты
+были доступны во всех новых встроенных терминалах portable VS Code, сначала
+запустите VS Code, затем выполните из каталога ZEMI CLI:
 
-TODO:
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install_zemi_cli.ps1
+```
 
-## 4. Создание ZEMI компонента из шаблона
+Скрипт найдёт запущенный portable VS Code и добавит каталог ZEMI CLI только в
+`terminal.integrated.env.windows.PATH` его пользовательских настроек. Windows
+`PATH` не изменяется.
 
+Закройте существующие встроенные терминалы VS Code и создайте новый терминал.
+Проверьте доступность команд:
+
+```powershell
+Get-Command create_zemi_instance.ps1
+Get-Command download_winpython.ps1
+Get-Command configure_vscode_python.ps1
+```
+
+Каждая команда должна указывать на соответствующий файл в каталоге ZEMI CLI.
+
+## 5. Создание ZEMI компонента из шаблона
 
