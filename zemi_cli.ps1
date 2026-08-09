@@ -1,0 +1,47 @@
+[CmdletBinding()]
+param(
+    [Parameter(Position = 0)]
+    [string]$Command = "help",
+
+    [Parameter(Position = 1, ValueFromRemainingArguments = $true)]
+    [string[]]$CommandArguments
+)
+
+$ErrorActionPreference = "Stop"
+
+$commandPath = (@($Command) + @($CommandArguments | Select-Object -First 1)) -join " "
+$scriptArguments = @($CommandArguments | Select-Object -Skip 1)
+
+switch ($commandPath.Trim()) {
+    "hello" {
+        Write-Host "Hello from ZEMI!" -ForegroundColor Green
+        return
+    }
+    { $_ -in @("help", "-h", "--help") } {
+        Write-Host @"
+ZEMI CLI
+
+Usage: zemi <command> [arguments]
+
+Commands:
+  hello - Test the ZEMI CLI
+  install - Add ZEMI CLI to portable VS Code
+  instance create - Create a ZEMI Instance
+  winpython download - Download WinPython
+  vscode reset-python-settings - Reset Python and Jupyter in VS Code
+"@
+        return
+    }
+    "install" { $scriptName = "install.ps1" }
+    "instance create" { $scriptName = "instance_create.ps1" }
+    "winpython download" { $scriptName = "winpython_download.ps1" }
+    "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
+    default {
+        $fullCommand = (@($Command) + @($CommandArguments)) -join " "
+        Write-Host "Unknown ZEMI command: $fullCommand" -ForegroundColor Red
+        Write-Host "Run 'zemi help' to see available commands."
+        exit 1
+    }
+}
+
+& (Join-Path $PSScriptRoot $scriptName) @scriptArguments

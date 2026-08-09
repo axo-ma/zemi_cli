@@ -22,7 +22,7 @@ TODO: git clone zemi cli
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File .\create_zemi_instance.ps1
+    -File .\instance_create.ps1
 ```
 
 ## 2. Загрузка WinPython 3.12
@@ -31,7 +31,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File .\download_winpython.ps1
+    -File .\winpython_download.ps1
 ```
 
 Как альтернатива, можете скачать WinPython самостоятельно
@@ -61,7 +61,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 Полностью закройте VS Code. Из внешнего PowerShell запустите одной строкой:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\reset_vscode_python.ps1 -InstancePath "<ZEMI Instance>"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\vscode_reset_python_settings.ps1 -InstancePath "<ZEMI Instance>"
 ```
 
 Для portable VS Code добавьте `-UserDataPath "<VS Code>\data\user-data\User"`.
@@ -79,7 +79,7 @@ ZEMI CLI может находиться в любом месте на диск�
 запустите VS Code, затем выполните из каталога ZEMI CLI:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install_zemi_cli.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
 Скрипт найдёт запущенный portable VS Code и добавит каталог ZEMI CLI только в
@@ -87,15 +87,22 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install_zemi_cli.ps1
 `PATH` не изменяется.
 
 Закройте существующие встроенные терминалы VS Code и создайте новый терминал.
-Проверьте доступность команд:
+Проверьте ZEMI CLI:
 
 ```powershell
-Get-Command create_zemi_instance.ps1
-Get-Command download_winpython.ps1
-Get-Command configure_vscode_python.ps1
+zemi hello
 ```
 
-Каждая команда должна указывать на соответствующий файл в каталоге ZEMI CLI.
+Ожидаемый результат:
+
+```text
+Hello from ZEMI!
+```
+
+Список доступных команд:
+
+```powershell
+zemi help
+```
 
 ## 5. Создание ZEMI компонента из шаблона
-

@@ -146,4 +146,4 @@ Write-Host "[OK] Experimental ZEMI Instance created." -ForegroundColor Green
 Write-Host "Root: $instanceRoot"
 Write-Host "Marker: $markerName"
 Write-Host ""
-Write-Host "Next: download WinPython into this Instance with download_winpython.ps1."
+Write-Host "Next: zemi winpython download"

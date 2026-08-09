@@ -20,9 +20,15 @@ if ($codePaths.Count -gt 1) {
 }
 
 $codeRoot = Split-Path -Parent $codePaths[0]
-$userRoot = Join-Path $codeRoot "data\user-data\User"
+$portableUserRoot = Join-Path $codeRoot "data\user-data\User"
+if (Test-Path -LiteralPath $portableUserRoot -PathType Container) {
+    $userRoot = $portableUserRoot
+}
+else {
+    $userRoot = Join-Path $env:APPDATA "Code\User"
+}
 if (-not (Test-Path -LiteralPath $userRoot -PathType Container)) {
-    throw "The running VS Code is not portable: $codeRoot"
+    throw "VS Code User directory was not found: $userRoot"
 }
 
 $cliRoot = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
