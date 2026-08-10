@@ -183,6 +183,39 @@ if (-not (Test-Path -LiteralPath $componentMarkerPath -PathType Leaf)) {
     [void](New-Item -ItemType File -Path $componentMarkerPath)
 }
 
+$vscodeRoot = Join-Path $componentRoot ".vscode"
+[void](New-Item -ItemType Directory -Path $vscodeRoot -Force)
+$vscodeSettingsPath = Join-Path $vscodeRoot "settings.json"
+if (Test-Path -LiteralPath $vscodeSettingsPath -PathType Leaf) {
+    try {
+        $vscodeSettings = Get-Content -LiteralPath $vscodeSettingsPath -Raw -Encoding UTF8 |
+            ConvertFrom-Json
+    }
+    catch {
+        throw "The component VS Code settings file is not valid JSON: $vscodeSettingsPath"
+    }
+
+    if ($vscodeSettings -isnot [PSCustomObject]) {
+        throw "The component VS Code settings file must contain a JSON object: $vscodeSettingsPath"
+    }
+}
+else {
+    $vscodeSettings = [PSCustomObject]@{}
+}
+
+$vscodeSettings |
+    Add-Member `
+        -MemberType NoteProperty `
+        -Name "python.defaultInterpreterPath" `
+        -Value '${workspaceFolder}/.venv/Scripts/python.exe' `
+        -Force
+$vscodeSettingsJson = $vscodeSettings | ConvertTo-Json -Depth 20
+[IO.File]::WriteAllText(
+    $vscodeSettingsPath,
+    $vscodeSettingsJson + [Environment]::NewLine,
+    (New-Object Text.UTF8Encoding($false))
+)
+
 if (-not $RepositoryUrl -and -not $NoRepository -and -not $Yes) {
     Write-Host ""
     Write-Host "Optionally connect an empty Git repository."
@@ -230,6 +263,7 @@ Write-Host ""
 Write-Host "[OK] ZEMI Component created." -ForegroundColor Green
 Write-Host "Root:   $componentRoot"
 Write-Host "Marker: .zemicomp"
+Write-Host "VS Code: .vscode/settings.json"
 if ($RepositoryUrl) {
     Write-Host "Origin: $RepositoryUrl"
 }

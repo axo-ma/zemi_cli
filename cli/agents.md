@@ -54,8 +54,9 @@
 - Определяй запущенный `Code.exe`. Если VS Code не запущен, выведи красную ошибку.
 - Для portable VS Code используй `data\user-data\User`; для обычного VS Code —
   `%APPDATA%\Code\User`.
-- Не добавляй команду настройки Python. VS Code должен самостоятельно обнаруживать
-  единственное окружение `.venv` внутри проекта.
+- Не добавляй отдельную команду настройки Python. `zemi component create`
+  создаёт `.vscode/settings.json` с `python.defaultInterpreterPath`, указывающим
+  на `${workspaceFolder}/.venv/Scripts/python.exe`.
 - `zemi vscode reset-python-settings` не принимает параметры и очищает только
   Python/Jupyter-настройки запущенного VS Code. Не сканируй ZEMI Instance, не
   изменяй компоненты и не требуй WinPython.
