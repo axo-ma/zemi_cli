@@ -16,6 +16,7 @@
   - `zemi help`;
   - `zemi cli install`;
   - `zemi component create`;
+  - `zemi component create-python-env`;
   - `zemi instance create`;
   - `zemi winpython download`;
   - `zemi vscode reset-python-settings`.
