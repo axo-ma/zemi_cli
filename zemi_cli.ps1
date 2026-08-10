@@ -26,6 +26,7 @@ Usage: zemi <command> [arguments]
 Commands:
   hello - Test the ZEMI CLI
   cli install - Add ZEMI CLI to VS Code
+  component create - Create a ZEMI Component from the GitHub template
   instance create - Create a ZEMI Instance
   winpython download - Download WinPython
   vscode reset-python-settings - Reset Python and Jupyter in VS Code
@@ -33,6 +34,7 @@ Commands:
         return
     }
     "cli install" { $scriptName = "cli_install.ps1" }
+    "component create" { $scriptName = "component_create.ps1" }
     "instance create" { $scriptName = "instance_create.ps1" }
     "winpython download" { $scriptName = "winpython_download.ps1" }
     "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
