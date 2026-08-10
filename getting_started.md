@@ -137,3 +137,23 @@ zemi component create-python-env
 библиотеку и все установленные пакеты базового WinPython. Дополнительные пакеты
 можно устанавливать локально в `@comp/.venv`; локальные версии имеют приоритет.
 Никакие зависимости проекта команда не устанавливает.
+
+## 6. Включение Multi-root Workspace в VS Code
+
+Из любого каталога внутри ZEMI Instance выполните:
+
+```powershell
+zemi vscode enable-multi-root
+```
+
+Команда создаёт или обновляет файл `@inst/ZEMI.code-workspace`. В него входят
+непосредственные дочерние каталоги Instance с одним из маркеров:
+
+- `.zemicomp` — ZEMI Component;
+- `.zemiworkroot` — дополнительный корень workspace, например `zemi` или
+  `zemi_cli`.
+
+Пути внутри workspace-файла относительны корню Instance. Повторный запуск
+обновляет список каталогов и сохраняет остальные настройки workspace. Откройте
+`@inst/ZEMI.code-workspace` в VS Code. Чтобы создать терминал в контексте нужной
+папки, выберите для неё **Open in Integrated Terminal** в Explorer.

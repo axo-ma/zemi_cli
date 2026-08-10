@@ -30,6 +30,7 @@ Commands:
   component create-python-env - Create the component .venv from Instance WinPython
   instance create - Create a ZEMI Instance
   winpython download - Download WinPython
+  vscode enable-multi-root - Create or update the ZEMI multi-root workspace
   vscode reset-python-settings - Reset Python and Jupyter in VS Code
 "@
         return
@@ -39,6 +40,7 @@ Commands:
     "component create-python-env" { $scriptName = "component_create_python_env.ps1" }
     "instance create" { $scriptName = "instance_create.ps1" }
     "winpython download" { $scriptName = "winpython_download.ps1" }
+    "vscode enable-multi-root" { $scriptName = "vscode_enable_multi_root.ps1" }
     "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
     default {
         $fullCommand = (@($Command) + @($CommandArguments)) -join " "
