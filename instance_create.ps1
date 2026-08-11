@@ -69,7 +69,7 @@ else {
 }
 
 $markerName = ".zemiinst_exp"
-$requiredDirectories = @("_pythons", "_models", "_llamas", "_tmp")
+$requiredDirectories = @("_pythons", "_venvs", "_models", "_llamas", "_tmp")
 
 if (-not $Yes) {
     $targetConfirmed = $false

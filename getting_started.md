@@ -146,6 +146,10 @@ zemi component create-python-env
 zemi vscode enable-multi-root
 ```
 
+Закройте ваш VSCode и откройте в нем `@inst/ZEMI.code-workspace`.
+
+Команда создаст VSCode workspace и поместит туда все zemi компоненты внутри текущего Zemi Instance.
+
 Команда создаёт или обновляет файл `@inst/ZEMI.code-workspace`. В него входят
 непосредственные дочерние каталоги Instance с одним из маркеров:
 
@@ -153,7 +157,6 @@ zemi vscode enable-multi-root
 - `.zemiworkroot` — дополнительный корень workspace, например `zemi` или
   `zemi_cli`.
 
-Пути внутри workspace-файла относительны корню Instance. Повторный запуск
-обновляет список каталогов и сохраняет остальные настройки workspace. Откройте
-`@inst/ZEMI.code-workspace` в VS Code. Чтобы создать терминал в контексте нужной
-папки, выберите для неё **Open in Integrated Terminal** в Explorer.
+Пути внутри workspace-файла относительны корня Instance. Повторный запуск
+обновляет список каталогов и сохраняет остальные настройки workspace. 
+
