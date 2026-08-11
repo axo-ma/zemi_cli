@@ -17,8 +17,6 @@
 > Instance находится в `D:\ZEMI\experiment-01`, то `@inst/_tmp` означает
 > `D:\ZEMI\experiment-01\_tmp`.
 
-
-
 ## 1. Развёртывание ZEMI CLI
 
 Выберите любое место на диске и клонируйте репозиторий ZEMI CLI:
@@ -36,7 +34,6 @@ cd .\zemi_cli
 ```
 
 Команда добавит каталог ZEMI CLI только в `terminal.integrated.env.windows.PATH` пользовательских настроек VS Code.
-
 
 Закройте существующие встроенные терминалы VS Code и создайте новый терминал.
 Проверьте глобальную команду:
@@ -85,7 +82,6 @@ zemi winpython download
 Как альтернатива, можете скачать WinPython самостоятельно
 [Winpython64-3.12.10.1slim.7z](https://github.com/winpython/winpython/releases/download/16.6.20250620final/Winpython64-3.12.10.1slim.7z)
 
-
 Скрипт сохранит WinPython архив в `@inst/_tmp`. Распакуйте его с помощью 7-Zip в:
 
 ```text
@@ -124,7 +120,6 @@ git add -A
 git commit -m "Initialize ZEMI component"
 git push -u origin main
 ```
-
 
 ## 5. Создание Python-окружения компонента
 
