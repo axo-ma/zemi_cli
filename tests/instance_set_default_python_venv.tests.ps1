@@ -30,7 +30,23 @@ try {
     [void](New-Item -ItemType File -Path (Join-Path $latestVenvRoot "Scripts\python.exe"))
     Set-Content -LiteralPath (Join-Path $latestVenvRoot "pyvenv.cfg") `
         -Value "include-system-site-packages = true"
+    [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b"))
+    [void](New-Item -ItemType File -Path (Join-Path $testRoot "component_b\.zemicomp"))
+    [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "project_a"))
+    [void](New-Item -ItemType File -Path (Join-Path $testRoot "project_a\.zemiworkroot"))
     & $commandScript -InstancePath $testRoot
+
+    $workspacePath = Join-Path $testRoot ((Split-Path -Leaf $testRoot) + ".code-workspace")
+    if (-not (Test-Path -LiteralPath $workspacePath -PathType Leaf)) {
+        throw "The instance-named VS Code workspace was not created."
+    }
+    $workspace = Get-Content -LiteralPath $workspacePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if (@($workspace.folders.path) -join ',' -cne 'component_b,project_a') {
+        throw "The workspace does not contain all marked roots."
+    }
+    if ($workspace.settings.'python.defaultInterpreterPath' -cne $latestVenvRoot + "\Scripts\python.exe") {
+        throw "The workspace default Python path is incorrect."
+    }
 
     $invalidNameFailed = $false
     try {

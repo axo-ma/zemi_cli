@@ -1,0 +1,3 @@
+{
+    "python.defaultInterpreterPath":  "${workspaceFolder}/../_venvs/default-WPy64-312101/Scripts/python.exe"
+}

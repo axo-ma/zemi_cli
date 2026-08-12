@@ -111,6 +111,7 @@ $venvName = "default-$WinPythonName"
 $venvRoot = Join-Path $venvsRoot $venvName
 $venvExecutable = Join-Path $venvRoot "Scripts\python.exe"
 $venvConfiguration = Join-Path $venvRoot "pyvenv.cfg"
+$venvAlreadyExists = $false
 
 if (Test-Path -LiteralPath $venvRoot) {
     if (-not (Test-Path -LiteralPath $venvRoot -PathType Container)) {
@@ -128,30 +129,97 @@ if (Test-Path -LiteralPath $venvRoot) {
 
     Write-Host "[OK] Default Python venv is already available:" -ForegroundColor Green
     Write-Host "  $venvRoot"
-    return
+    $venvAlreadyExists = $true
 }
 
-if (-not $PSCmdlet.ShouldProcess($venvRoot, "Create a transparent venv for $WinPythonName")) {
-    return
+if (-not $venvAlreadyExists) {
+    if (-not $PSCmdlet.ShouldProcess($venvRoot, "Create a transparent venv for $WinPythonName")) {
+        return
+    }
+
+    & $winPythonExecutable -m venv --system-site-packages --without-pip $venvRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "WinPython failed to create the default venv (exit code $LASTEXITCODE)."
+    }
+
+    if (-not (Test-Path -LiteralPath $venvExecutable -PathType Leaf) -or
+        -not (Test-Path -LiteralPath $venvConfiguration -PathType Leaf)) {
+        throw "The default venv was not created correctly: $venvRoot"
+    }
+
+    $configurationText = Get-Content -LiteralPath $venvConfiguration -Raw
+    if ($configurationText -notmatch '(?im)^include-system-site-packages\s*=\s*true\s*$') {
+        throw "The created venv does not expose WinPython site-packages: $venvRoot"
+    }
+
+    Write-Host ""
+    Write-Host "[OK] Default Python venv created." -ForegroundColor Green
 }
 
-& $winPythonExecutable -m venv --system-site-packages --without-pip $venvRoot
-if ($LASTEXITCODE -ne 0) {
-    throw "WinPython failed to create the default venv (exit code $LASTEXITCODE)."
-}
-
-if (-not (Test-Path -LiteralPath $venvExecutable -PathType Leaf) -or
-    -not (Test-Path -LiteralPath $venvConfiguration -PathType Leaf)) {
-    throw "The default venv was not created correctly: $venvRoot"
-}
-
-$configurationText = Get-Content -LiteralPath $venvConfiguration -Raw
-if ($configurationText -notmatch '(?im)^include-system-site-packages\s*=\s*true\s*$') {
-    throw "The created venv does not expose WinPython site-packages: $venvRoot"
-}
-
-Write-Host ""
-Write-Host "[OK] Default Python venv created." -ForegroundColor Green
 Write-Host "Venv: $venvRoot"
 Write-Host "WinPython: $winPythonRoot"
 Write-Host "Python: $venvExecutable"
+
+$workspaceRoots = @(
+    Get-ChildItem -LiteralPath $instanceRoot -Force -Directory |
+        Where-Object {
+            (Test-Path -LiteralPath (Join-Path $_.FullName ".zemicomp") -PathType Leaf) -or
+            (Test-Path -LiteralPath (Join-Path $_.FullName ".zemiworkroot") -PathType Leaf)
+        } |
+        Sort-Object -Property Name
+)
+$folders = @(
+    $workspaceRoots | ForEach-Object {
+        [PSCustomObject][ordered]@{ path = $_.Name }
+    }
+)
+$workspaceFileName = (Split-Path -Leaf $instanceRoot) + ".code-workspace"
+$workspacePath = Join-Path $instanceRoot $workspaceFileName
+
+if (Test-Path -LiteralPath $workspacePath -PathType Leaf) {
+    try {
+        $workspace = Get-Content -LiteralPath $workspacePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    }
+    catch {
+        throw "The existing workspace file is not valid JSON: $workspacePath"
+    }
+    if ($workspace -isnot [PSCustomObject]) {
+        throw "The existing workspace file must contain a JSON object: $workspacePath"
+    }
+    $workspace | Add-Member -MemberType NoteProperty -Name "folders" -Value $folders -Force
+    if (-not $workspace.PSObject.Properties["settings"] -or $null -eq $workspace.settings) {
+        $workspace | Add-Member -MemberType NoteProperty -Name "settings" -Value ([PSCustomObject]@{})
+    }
+    elseif ($workspace.settings -isnot [PSCustomObject]) {
+        throw "The existing workspace settings must contain a JSON object: $workspacePath"
+    }
+}
+else {
+    $workspace = [PSCustomObject][ordered]@{
+        folders = $folders
+        settings = [PSCustomObject]@{}
+    }
+}
+
+$workspace.settings | Add-Member `
+    -MemberType NoteProperty `
+    -Name "python.defaultInterpreterPath" `
+    -Value $venvExecutable `
+    -Force
+
+$workspaceContent = ($workspace | ConvertTo-Json -Depth 20) + [Environment]::NewLine
+if (-not $PSCmdlet.ShouldProcess($workspacePath, "Create or update the VS Code workspace")) {
+    return
+}
+[IO.File]::WriteAllText(
+    $workspacePath,
+    $workspaceContent,
+    (New-Object Text.UTF8Encoding($false))
+)
+
+Write-Host ""
+Write-Host "[OK] VS Code workspace is ready." -ForegroundColor Green
+Write-Host "Workspace: $workspacePath"
+Write-Host "Roots:     $($workspaceRoots.Count)"
+Write-Host "Close VS Code and reopen it using this workspace file:"
+Write-Host "  $workspacePath"

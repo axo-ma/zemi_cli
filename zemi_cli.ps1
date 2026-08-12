@@ -32,9 +32,11 @@ Commands:
   hello - Test the ZEMI CLI
   vscode install-cli - Add ZEMI CLI to VS Code
   component create - Create a ZEMI Component from the GitHub template
+  component set-default-python-venv - Set the Instance default Python venv for the current project root
+  component set-default-python-venv2 - Set it using an absolute path (temporary debug command)
   instance create - Create a ZEMI Instance
   instance download-winpython - Download WinPython
-  instance set-default-python-venv - Create the default transparent Python venv
+  instance set-default-python-venv - Create the default Python venv and configure the Instance workspace
   vscode enable-multi-root - Create or update the ZEMI multi-root workspace
   vscode reset-python-settings - Reset Python and Jupyter in VS Code
 "@
@@ -42,6 +44,11 @@ Commands:
     }
     "vscode install-cli" { $scriptName = "vscode_install_cli.ps1" }
     "component create" { $scriptName = "component_create.ps1" }
+    "component set-default-python-venv" { $scriptName = "component_set_default_python_venv.ps1" }
+    "component set-default-python-venv2" {
+        $scriptName = "component_set_default_python_venv.ps1"
+        $scriptArguments += "-AbsolutePath"
+    }
     "instance create" { $scriptName = "instance_create.ps1" }
     "instance download-winpython" { $scriptName = "instance_download_winpython.ps1" }
     "instance set-default-python-venv" { $scriptName = "instance_set_default_python_venv.ps1" }

@@ -83,6 +83,51 @@ function Resolve-ZemiInstanceRoot {
     return $resolvedPath
 }
 
+function Find-LatestDefaultPythonVenv {
+    param([string]$InstanceRoot)
+
+    $venvsRoot = Join-Path $InstanceRoot "_venvs"
+    if (-not (Test-Path -LiteralPath $venvsRoot -PathType Container)) {
+        return $null
+    }
+
+    $defaultVenvs = @(
+        Get-ChildItem -LiteralPath $venvsRoot -Directory |
+            ForEach-Object {
+                if ($_.Name -match '^default-(WPy64-(\d+))$' -and
+                    (Test-Path -LiteralPath (Join-Path $_.FullName "Scripts\python.exe") -PathType Leaf) -and
+                    (Test-Path -LiteralPath (Join-Path $_.FullName "pyvenv.cfg") -PathType Leaf)) {
+                    $numericVersion = 0L
+                    if ([long]::TryParse($Matches[2], [ref]$numericVersion)) {
+                        [pscustomobject]@{
+                            Name = $_.Name
+                            NumericVersion = $numericVersion
+                            PythonPath = Join-Path $_.FullName "Scripts\python.exe"
+                        }
+                    }
+                }
+            }
+    )
+
+    return $defaultVenvs |
+        Sort-Object -Property NumericVersion, Name -Descending |
+        Select-Object -First 1
+}
+
+function Get-VSCodeDefaultInterpreterPath {
+    param(
+        [string]$ProjectRoot,
+        [string]$PythonPath
+    )
+
+    $projectUri = New-Object Uri(
+        ([IO.Path]::GetFullPath($ProjectRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
+    )
+    $pythonUri = New-Object Uri([IO.Path]::GetFullPath($PythonPath))
+    $relativePath = [Uri]::UnescapeDataString($projectUri.MakeRelativeUri($pythonUri).ToString())
+    return '${workspaceFolder}/' + $relativePath
+}
+
 function Invoke-Git {
     param(
         [string[]]$Arguments,
@@ -139,6 +184,16 @@ else {
     }
 }
 
+$defaultVenv = Find-LatestDefaultPythonVenv -InstanceRoot $instanceRoot
+if (-not $defaultVenv) {
+    throw @"
+No default Python venv was found in this ZEMI Instance.
+Create one, then run component create again:
+  zemi instance set-default-python-venv -InstancePath "$instanceRoot"
+The component was not created.
+"@
+}
+
 while (-not (Test-ZemiComponentName -Name $ComponentName)) {
     if (-not [string]::IsNullOrWhiteSpace($ComponentName)) {
         Write-Warning "Use a single valid folder name without path separators."
@@ -156,6 +211,8 @@ Write-Host "ZEMI Component will be cloned from:"
 Write-Host "  $templateUrl" -ForegroundColor Cyan
 Write-Host "Target:"
 Write-Host "  $componentRoot" -ForegroundColor Cyan
+Write-Host "Default Python venv:"
+Write-Host "  $($defaultVenv.PythonPath)" -ForegroundColor Cyan
 Write-Host ""
 
 if (-not $Yes) {
@@ -207,7 +264,7 @@ $vscodeSettings |
     Add-Member `
         -MemberType NoteProperty `
         -Name "python.defaultInterpreterPath" `
-        -Value '${workspaceFolder}/.venv/Scripts/python.exe' `
+        -Value (Get-VSCodeDefaultInterpreterPath -ProjectRoot $componentRoot -PythonPath $defaultVenv.PythonPath) `
         -Force
 $vscodeSettingsJson = $vscodeSettings | ConvertTo-Json -Depth 20
 [IO.File]::WriteAllText(
@@ -264,6 +321,7 @@ Write-Host "[OK] ZEMI Component created." -ForegroundColor Green
 Write-Host "Root:   $componentRoot"
 Write-Host "Marker: .zemicomp"
 Write-Host "VS Code: .vscode/settings.json"
+Write-Host "Python: $($defaultVenv.PythonPath)"
 if ($RepositoryUrl) {
     Write-Host "Origin: $RepositoryUrl"
 }

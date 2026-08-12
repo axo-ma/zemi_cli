@@ -99,18 +99,24 @@ zemi instance download-winpython
 
 ## 4. Создание ZEMI компонента из шаблона
 
-Перейдите в каталог ZEMI Instance и запустите команду, указав имя каталога
-нового компонента:
+Сначала создайте default Python venv для установленного WinPython, затем
+запустите создание компонента:
 
 ```powershell
+zemi instance set-default-python-venv
 zemi component create my_component
 ```
 
 В процессе можно указать URL заранее созданного пустого Git-репозитория.  после чего комманда добавит его как новый `origin`.
 
+Наличие default Python venv обязательно. Если его нет, команда подскажет
+`zemi instance set-default-python-venv` и не создаст компонент. Если default
+venv существует для нескольких WinPython, выбирается окружение с наибольшим
+числовым суффиксом имени WinPython.
+
 Команда также создаёт локальный файл `@comp/.vscode/settings.json` и задаёт в
-нём интерпретатор `${workspaceFolder}/.venv/Scripts/python.exe`. Настройка
-начинает работать после создания окружения компонента.
+нём `python.defaultInterpreterPath` с относительным путём к выбранному
+`@inst/_venvs/default-WPy64-<версия>/Scripts/python.exe`.
 
 Команда не создаёт commit и не отправляет изменения автоматически. Сначала
 проверьте и настройте компонент, затем сделайте commit и push удобным вам образом. Например, выполните обычные команды Git:
@@ -121,10 +127,19 @@ git commit -m "Initialize ZEMI component"
 git push -u origin main
 ```
 
-## 5. Создание Python-окружения компонента
+## 5. Назначение default Python venv существующему проекту
 
-> **Заглушка.** Команда создания Python-окружения компонента будет добавлена
-> позже.
+Перейдите в корень компонента или любой вложенный каталог и выполните:
+
+```powershell
+zemi component set-default-python-venv
+```
+
+Команда найдёт ближайший корень проекта по маркеру `.zemicomp` или
+`.zemiworkroot`, затем найдёт ZEMI Instance, выберет default venv для самого
+свежего WinPython и обновит `.vscode/settings.json` в найденном корне, сохранив
+остальные настройки файла. Если default venv отсутствует, файл не изменяется,
+а команда выводит инструкцию по его созданию.
 
 ## 6. Включение Multi-root Workspace в VS Code
 
