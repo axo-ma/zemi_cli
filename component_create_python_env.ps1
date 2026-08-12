@@ -106,7 +106,7 @@ $instanceRoot = Find-ZemiInstanceRoot -StartPath $instanceSearchRoot
 $winPythonRoot = Join-Path $instanceRoot "_pythons\$winPythonFolderName\python"
 $winPythonExecutable = Join-Path $winPythonRoot "python.exe"
 if (-not (Test-Path -LiteralPath $winPythonExecutable -PathType Leaf)) {
-    throw "WinPython was not found: $winPythonExecutable`nRun 'zemi winpython download' and extract it before creating the Python environment."
+    throw "WinPython was not found: $winPythonExecutable`nRun 'zemi instance download-winpython' and extract it before creating the Python environment."
 }
 
 $pythonEnvRoot = Join-Path $componentRoot ".venv"

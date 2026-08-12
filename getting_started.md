@@ -11,6 +11,7 @@
    - Microsoft Jupyter (`ms-toolsai.jupyter`).
 4. **7-Zip** — требуется для распаковки архива WinPython.
 5. Доступ в интернет — для загрузки WinPython и клонирования репозитория.
+6. MSOffice для работы с Excel
 
 > **Обозначение `@inst`.** В этом руководстве `@inst` означает путь к корню
 > конкретного ZEMI Instance. Это не буквальное имя каталога. Например, если
@@ -30,7 +31,7 @@ cd .\zemi_cli
 каталога ZEMI CLI выполните:
 
 ```powershell
-.\zemi.cmd cli install
+.\zemi.cmd vscode install-cli
 ```
 
 Команда добавит каталог ZEMI CLI только в `terminal.integrated.env.windows.PATH` пользовательских настроек VS Code.
@@ -76,7 +77,7 @@ zemi instance create
 Чтобы скачать WinPython, запустите:
 
 ```powershell
-zemi winpython download
+zemi instance download-winpython
 ```
 
 Как альтернатива, можете скачать WinPython самостоятельно
@@ -159,4 +160,3 @@ zemi vscode enable-multi-root
 
 Пути внутри workspace-файла относительны корня Instance. Повторный запуск
 обновляет список каталогов и сохраняет остальные настройки workspace. 
-
