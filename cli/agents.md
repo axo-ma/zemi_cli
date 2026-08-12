@@ -16,7 +16,6 @@
   - `zemi help`;
   - `zemi vscode install-cli`;
   - `zemi component create`;
-  - `zemi component create-python-env`;
   - `zemi instance create`;
   - `zemi instance download-winpython`;
   - `zemi vscode enable-multi-root`;
@@ -27,9 +26,9 @@
 - Именуй реализацию по шаблону `<группа>_<действие>.ps1`.
 - Примеры:
   - `instance_create.ps1`;
-  - `winpython_download.ps1`;
+  - `instance_download_winpython.ps1`;
   - `vscode_reset_python_settings.ps1`;
-  - `cli_install.ps1`.
+  - `vscode_install_cli.ps1`.
 - При переименовании сразу обновляй диспетчер, документацию и текстовые ссылки.
 
 ## Простота

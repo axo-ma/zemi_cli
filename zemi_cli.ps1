@@ -27,7 +27,6 @@ Commands:
   hello - Test the ZEMI CLI
   vscode install-cli - Add ZEMI CLI to VS Code
   component create - Create a ZEMI Component from the GitHub template
-  component create-python-env - Create the component .venv from Instance WinPython
   instance create - Create a ZEMI Instance
   instance download-winpython - Download WinPython
   vscode enable-multi-root - Create or update the ZEMI multi-root workspace
@@ -35,11 +34,10 @@ Commands:
 "@
         return
     }
-    "vscode install-cli" { $scriptName = "cli_install.ps1" }
+    "vscode install-cli" { $scriptName = "vscode_install_cli.ps1" }
     "component create" { $scriptName = "component_create.ps1" }
-    "component create-python-env" { $scriptName = "component_create_python_env.ps1" }
     "instance create" { $scriptName = "instance_create.ps1" }
-    "instance download-winpython" { $scriptName = "winpython_download.ps1" }
+    "instance download-winpython" { $scriptName = "instance_download_winpython.ps1" }
     "vscode enable-multi-root" { $scriptName = "vscode_enable_multi_root.ps1" }
     "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
     default {
