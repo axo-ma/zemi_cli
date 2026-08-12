@@ -4,13 +4,18 @@ param(
     [string]$Command = "help",
 
     [Parameter(Position = 1, ValueFromRemainingArguments = $true)]
-    [string[]]$CommandArguments
+    [string[]]$CommandArguments,
+
+    [switch]$WhatIf
 )
 
 $ErrorActionPreference = "Stop"
 
 $commandPath = (@($Command) + @($CommandArguments | Select-Object -First 1)) -join " "
 $scriptArguments = @($CommandArguments | Select-Object -Skip 1)
+if ($WhatIf) {
+    $scriptArguments += "-WhatIf"
+}
 
 switch ($commandPath.Trim()) {
     "hello" {
@@ -29,6 +34,7 @@ Commands:
   component create - Create a ZEMI Component from the GitHub template
   instance create - Create a ZEMI Instance
   instance download-winpython - Download WinPython
+  instance set-default-python-venv - Create the default transparent Python venv
   vscode enable-multi-root - Create or update the ZEMI multi-root workspace
   vscode reset-python-settings - Reset Python and Jupyter in VS Code
 "@
@@ -38,6 +44,7 @@ Commands:
     "component create" { $scriptName = "component_create.ps1" }
     "instance create" { $scriptName = "instance_create.ps1" }
     "instance download-winpython" { $scriptName = "instance_download_winpython.ps1" }
+    "instance set-default-python-venv" { $scriptName = "instance_set_default_python_venv.ps1" }
     "vscode enable-multi-root" { $scriptName = "vscode_enable_multi_root.ps1" }
     "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
     default {
@@ -48,4 +55,6 @@ Commands:
     }
 }
 
-& (Join-Path $PSScriptRoot $scriptName) @scriptArguments
+$scriptPath = Join-Path $PSScriptRoot $scriptName
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $scriptPath @scriptArguments
+exit $LASTEXITCODE
