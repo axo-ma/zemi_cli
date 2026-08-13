@@ -98,7 +98,7 @@ if (-not $defaultVenv) {
     throw @"
 No default Python venv was found in this ZEMI Instance.
 Create one, then run this command again:
-  zemi instance set-default-python-venv -InstancePath "$instanceRoot"
+  zemi instance setup-vscode-workspace -InstancePath "$instanceRoot"
 "@
 }
 

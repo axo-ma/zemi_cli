@@ -18,8 +18,8 @@ Commands:
 + vscode enable-multi-root -> zemi vscode enable-multi-root
 
 + instance create -> zemi instance create
-+ winpython download -> zemi instance download-winpython
-- zemi instance set-default-python-venv
++ winpython download -> zemi instance deploy-winpython
+- zemi instance setup-vscode-workspace
 
 - zemi component create my_component
 - zemi component update-zemilib

@@ -77,17 +77,23 @@ zemi instance create
 Чтобы скачать WinPython, запустите:
 
 ```powershell
-zemi instance download-winpython
+zemi instance deploy-winpython
 ```
 
 Как альтернатива, можете скачать WinPython самостоятельно
 [Winpython64-3.12.10.1slim.7z](https://github.com/winpython/winpython/releases/download/16.6.20250620final/Winpython64-3.12.10.1slim.7z)
 
-Скрипт сохранит WinPython архив в `@inst/_tmp`. Распакуйте его с помощью 7-Zip в:
+Команда сама найдёт ZEMI Instance по маркеру в текущем каталоге или одном из
+родительских каталогов и сохранит архив в `@inst/_tmp`. После проверки архива
+она предложит сразу распаковать WinPython с помощью 7-Zip в:
 
 ```text
 @inst/_pythons
 ```
+
+После успешной распаковки команда предложит удалить скачанный `.7z`-архив.
+Если каталогов `@inst/_tmp` или `@inst/_pythons` ещё нет, команда создаст их
+автоматически.
 
 Проверьте интерпретатор:
 
@@ -103,14 +109,14 @@ zemi instance download-winpython
 запустите создание компонента:
 
 ```powershell
-zemi instance set-default-python-venv
+zemi instance setup-vscode-workspace
 zemi component create my_component
 ```
 
 В процессе можно указать URL заранее созданного пустого Git-репозитория.  после чего комманда добавит его как новый `origin`.
 
 Наличие default Python venv обязательно. Если его нет, команда подскажет
-`zemi instance set-default-python-venv` и не создаст компонент. Если default
+`zemi instance setup-vscode-workspace` и не создаст компонент. Если default
 venv существует для нескольких WinPython, выбирается окружение с наибольшим
 числовым суффиксом имени WinPython.
 

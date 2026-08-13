@@ -35,8 +35,8 @@ Commands:
   component set-default-python-venv - Set the Instance default Python venv for the current project root
   component set-default-python-venv2 - Set it using an absolute path (temporary debug command)
   instance create - Create a ZEMI Instance
-  instance download-winpython - Download WinPython
-  instance set-default-python-venv - Create the default Python venv and configure the Instance workspace
+  instance deploy-winpython - Download and deploy WinPython
+  instance setup-vscode-workspace - Create the default Python venv and configure the Instance workspace
   vscode enable-multi-root - Create or update the ZEMI multi-root workspace
   vscode reset-python-settings - Reset Python and Jupyter in VS Code
 "@
@@ -50,8 +50,8 @@ Commands:
         $scriptArguments += "-AbsolutePath"
     }
     "instance create" { $scriptName = "instance_create.ps1" }
-    "instance download-winpython" { $scriptName = "instance_download_winpython.ps1" }
-    "instance set-default-python-venv" { $scriptName = "instance_set_default_python_venv.ps1" }
+    "instance deploy-winpython" { $scriptName = "instance_deploy_winpython.ps1" }
+    "instance setup-vscode-workspace" { $scriptName = "instance_setup_vscode_workspace.ps1" }
     "vscode enable-multi-root" { $scriptName = "vscode_enable_multi_root.ps1" }
     "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
     default {

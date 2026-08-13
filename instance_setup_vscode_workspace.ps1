@@ -206,6 +206,11 @@ $workspace.settings | Add-Member `
     -Name "python.defaultInterpreterPath" `
     -Value $venvExecutable `
     -Force
+$workspace.settings | Add-Member `
+    -MemberType NoteProperty `
+    -Name "terminal.integrated.cwd" `
+    -Value $instanceRoot `
+    -Force
 
 $workspaceContent = ($workspace | ConvertTo-Json -Depth 20) + [Environment]::NewLine
 if (-not $PSCmdlet.ShouldProcess($workspacePath, "Create or update the VS Code workspace")) {

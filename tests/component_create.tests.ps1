@@ -21,7 +21,7 @@ try {
         & $commandScript -InstancePath $testRoot -ComponentName "missing-env" -NoRepository -Yes -WhatIf
     }
     catch {
-        $missingVenvFailed = $_.Exception.Message -match 'zemi instance set-default-python-venv' -and
+        $missingVenvFailed = $_.Exception.Message -match 'zemi instance setup-vscode-workspace' -and
             $_.Exception.Message -match 'component was not created'
     }
     if (-not $missingVenvFailed) {

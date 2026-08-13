@@ -14,40 +14,112 @@ $expectedSize = 630560365L
 $winPythonFolderName = "WPy64-312101"
 $instanceMarkerNames = @(".zemiinst_dev", ".zemiinst_exp", ".zemiinst_prod")
 
-function Show-SevenZipInstructions {
-    param(
-        [string]$ArchivePath,
-        [string]$DestinationPath
-    )
-
-    $sevenZipExecutable = $null
+function Get-SevenZipExecutable {
     $sevenZipCommand = Get-Command "7z.exe" -ErrorAction SilentlyContinue
     if ($sevenZipCommand) {
-        $sevenZipExecutable = $sevenZipCommand.Source
+        return $sevenZipCommand.Source
     }
 
-    if (-not $sevenZipExecutable) {
-        $sevenZipCandidates = @(
-            (Join-Path ([Environment]::GetFolderPath("ProgramFiles")) "7-Zip\7z.exe"),
-            (Join-Path ([Environment]::GetFolderPath("ProgramFilesX86")) "7-Zip\7z.exe")
-        )
-        $sevenZipExecutable = $sevenZipCandidates |
-            Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } |
-            Select-Object -First 1
-    }
+    $sevenZipCandidates = @(
+        (Join-Path ([Environment]::GetFolderPath("ProgramFiles")) "7-Zip\7z.exe"),
+        (Join-Path ([Environment]::GetFolderPath("ProgramFilesX86")) "7-Zip\7z.exe")
+    )
 
-    Write-Host "Extract it with 7-Zip into:"
-    Write-Host "  $DestinationPath" -ForegroundColor Cyan
-    Write-Host ""
+    return $sevenZipCandidates |
+        Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } |
+        Select-Object -First 1
+}
 
-    if ($sevenZipExecutable) {
-        Write-Host "PowerShell command:"
-        Write-Host ('  & "{0}" x "{1}" "-o{2}"' -f $sevenZipExecutable, $ArchivePath, $DestinationPath)
+function Invoke-OptionalExtraction {
+    param(
+        [string]$ArchivePath,
+        [string]$DestinationPath,
+        [switch]$ConfirmAutomatically
+    )
+
+    $sevenZipExecutable = Get-SevenZipExecutable
+    $manualSevenZipExecutable = if ($sevenZipExecutable) {
+        $sevenZipExecutable
     }
     else {
-        Write-Host "7-Zip was not found automatically. Use the 7-Zip GUI or its full executable path."
-        Write-Host "Archive: $ArchivePath"
+        Join-Path ([Environment]::GetFolderPath("ProgramFiles")) "7-Zip\7z.exe"
     }
+    $extractionCommand = '& "{0}" x "{1}" "-o{2}" -y' -f `
+        $manualSevenZipExecutable,
+        $ArchivePath,
+        $DestinationPath
+
+    Write-Host "Archive: $ArchivePath"
+    Write-Host "Extraction destination: $DestinationPath" -ForegroundColor Cyan
+    Write-Host "Manual extraction command:"
+    Write-Host "  $extractionCommand"
+    Write-Host ""
+
+    if (-not $sevenZipExecutable) {
+        Write-Host "7-Zip was not found automatically. Use the 7-Zip GUI or its full executable path."
+        return
+    }
+
+    $extract = $ConfirmAutomatically
+    if (-not $extract) {
+        $answer = (Read-Host "Extract WinPython now with 7-Zip? [Y/n]").Trim()
+        $extract = (-not $answer) -or ($answer -in @("y", "yes"))
+    }
+
+    if (-not $extract) {
+        Write-Host "Extraction skipped."
+        Write-Host "Run later: $extractionCommand"
+        return
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($DestinationPath, "Extract WinPython with 7-Zip")) {
+        return
+    }
+
+    & $sevenZipExecutable x $ArchivePath "-o$DestinationPath" -y
+    if ($LASTEXITCODE -ne 0) {
+        throw "7-Zip failed to extract WinPython (exit code $LASTEXITCODE)."
+    }
+
+    Write-Host "[OK] WinPython extracted." -ForegroundColor Green
+
+    $deleteArchive = $ConfirmAutomatically
+    if (-not $deleteArchive) {
+        Write-Host "Downloaded archive: $ArchivePath"
+        $answer = (Read-Host "Delete the downloaded archive? [y/N]").Trim()
+        $deleteArchive = $answer -in @("y", "yes")
+    }
+
+    if ($deleteArchive -and $PSCmdlet.ShouldProcess($ArchivePath, "Delete extracted WinPython archive")) {
+        Remove-Item -LiteralPath $ArchivePath -Force
+        Write-Host "[OK] Downloaded archive deleted." -ForegroundColor Green
+    }
+    elseif (-not $deleteArchive) {
+        Write-Host "Archive kept: $ArchivePath"
+    }
+}
+
+function Find-ZemiInstanceRoot {
+    param([string]$StartPath)
+
+    $current = Get-Item -LiteralPath $StartPath
+    while ($current) {
+        $markers = @(
+            Get-ChildItem -LiteralPath $current.FullName -Force -File |
+                Where-Object { $_.Name -in $instanceMarkerNames }
+        )
+
+        if ($markers.Count -eq 1) {
+            return $current.FullName
+        }
+        if ($markers.Count -gt 1) {
+            throw "Expected exactly one ZEMI Instance marker in: $($current.FullName)"
+        }
+
+        $current = $current.Parent
+    }
+
+    throw "ZEMI Instance was not found from the current directory or its parents: $StartPath"
 }
 
 function Invoke-DownloadWithProgress {
@@ -132,7 +204,7 @@ function Invoke-DownloadWithProgress {
 }
 
 if ([string]::IsNullOrWhiteSpace($InstancePath)) {
-    $InstancePath = (Read-Host "Full path to the ZEMI Instance").Trim().Trim('"')
+    $InstancePath = Find-ZemiInstanceRoot -StartPath (Get-Location).ProviderPath
 }
 
 if (-not (Test-Path -LiteralPath $InstancePath -PathType Container)) {
@@ -154,7 +226,7 @@ $temporaryRoot = Join-Path $instanceRoot "_tmp"
 
 foreach ($requiredDirectory in @($pythonsRoot, $temporaryRoot)) {
     if (-not (Test-Path -LiteralPath $requiredDirectory -PathType Container)) {
-        throw "Required ZEMI Instance directory was not found: $requiredDirectory"
+        New-Item -ItemType Directory -Path $requiredDirectory | Out-Null
     }
 }
 
@@ -175,7 +247,7 @@ if (Test-Path -LiteralPath $archivePath -PathType Leaf) {
         Write-Host "[OK] The verified WinPython archive is already downloaded." -ForegroundColor Green
         Write-Host "Archive: $archivePath"
         Write-Host ""
-        Show-SevenZipInstructions -ArchivePath $archivePath -DestinationPath $pythonsRoot
+        Invoke-OptionalExtraction -ArchivePath $archivePath -DestinationPath $pythonsRoot -ConfirmAutomatically:$Yes
         return
     }
 
@@ -185,7 +257,10 @@ if (Test-Path -LiteralPath $archivePath -PathType Leaf) {
 Write-Host ""
 Write-Host "WinPython archive: $archiveName"
 Write-Host "Download size: 630,560,365 bytes (about 601 MiB)"
-Write-Host "Destination: $archivePath"
+Write-Host "Download source: $downloadUrl"
+Write-Host "Download destination: $archivePath" -ForegroundColor Cyan
+Write-Host "Manual download command:"
+Write-Host ('  Invoke-WebRequest -Uri "{0}" -OutFile "{1}"' -f $downloadUrl, $archivePath)
 Write-Host ""
 
 if (-not $Yes) {
@@ -241,7 +316,7 @@ Write-Host "[OK] WinPython archive downloaded and verified." -ForegroundColor Gr
 Write-Host "Archive: $archivePath"
 Write-Host "SHA-256: $expectedSha256"
 Write-Host ""
-Show-SevenZipInstructions -ArchivePath $archivePath -DestinationPath $pythonsRoot
+Invoke-OptionalExtraction -ArchivePath $archivePath -DestinationPath $pythonsRoot -ConfirmAutomatically:$Yes
 Write-Host ""
 Write-Host "After extraction, verify:"
 Write-Host "  $winPythonExecutable"

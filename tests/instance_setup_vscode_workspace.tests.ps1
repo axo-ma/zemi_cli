@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $cliRoot = Split-Path -Parent $PSScriptRoot
-$commandScript = Join-Path $cliRoot "instance_set_default_python_venv.ps1"
+$commandScript = Join-Path $cliRoot "instance_setup_vscode_workspace.ps1"
 $instanceRoot = Split-Path -Parent $cliRoot
 $temporaryRoot = Join-Path $instanceRoot "_tmp"
 
@@ -47,6 +47,9 @@ try {
     if ($workspace.settings.'python.defaultInterpreterPath' -cne $latestVenvRoot + "\Scripts\python.exe") {
         throw "The workspace default Python path is incorrect."
     }
+    if ($workspace.settings.'terminal.integrated.cwd' -cne $testRoot) {
+        throw "The workspace terminal directory is not the ZEMI Instance root."
+    }
 
     $invalidNameFailed = $false
     try {
@@ -59,7 +62,7 @@ try {
         throw "An invalid WinPython folder name was not rejected."
     }
 
-    Write-Host "[OK] instance set-default-python-venv tests passed." -ForegroundColor Green
+    Write-Host "[OK] instance setup-vscode-workspace tests passed." -ForegroundColor Green
 }
 finally {
     if (Test-Path -LiteralPath $testRoot) {
