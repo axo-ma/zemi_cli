@@ -18,7 +18,6 @@
   - `zemi component create`;
   - `zemi instance create`;
   - `zemi instance deploy-winpython`;
-  - `zemi vscode enable-multi-root`;
   - `zemi vscode reset-python-settings`.
 
 ## Имена файлов
@@ -59,10 +58,6 @@
 - `zemi vscode reset-python-settings` не принимает параметры и очищает только
   Python/Jupyter-настройки запущенного VS Code. Не сканируй ZEMI Instance, не
   изменяй компоненты и не требуй WinPython.
-- `zemi vscode enable-multi-root` находит ZEMI Instance над текущим каталогом и
-  создаёт или обновляет `@inst/ZEMI.code-workspace`. Включай только
-  непосредственные дочерние каталоги с `.zemicomp` или `.zemiworkroot`, храни
-  пути относительными и сохраняй остальные настройки существующего workspace.
 
 
 ## Документация и проверки

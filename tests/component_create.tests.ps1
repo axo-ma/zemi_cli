@@ -73,6 +73,31 @@ try {
         throw "Unexpected VS Code interpreter path: $interpreterPath"
     }
 
+    $workspaceDefinition = $syntaxTree.Find(
+        { param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+            $node.Name -eq "Add-ComponentToVSCodeWorkspace" },
+        $true
+    )
+    Invoke-Expression $workspaceDefinition.Extent.Text
+    $workspacePath = Join-Path $testRoot ((Split-Path -Leaf $testRoot) + ".code-workspace")
+    [IO.File]::WriteAllText(
+        $workspacePath,
+        '{"folders":[],"settings":{"existing.setting":true}}',
+        (New-Object Text.UTF8Encoding($false))
+    )
+    [void](Add-ComponentToVSCodeWorkspace -InstanceRoot $testRoot -ComponentName "latest-env")
+    [void](Add-ComponentToVSCodeWorkspace -InstanceRoot $testRoot -ComponentName "latest-env")
+    $workspace = Get-Content -LiteralPath $workspacePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($workspace.folders -isnot [array]) {
+        throw "The Instance workspace folders property is not a JSON array."
+    }
+    if (@($workspace.folders.path) -join ',' -cne 'latest-env') {
+        throw "Component creation did not add the project to the Instance workspace exactly once."
+    }
+    if ($workspace.settings.'existing.setting' -ne $true) {
+        throw "Component creation did not preserve existing workspace settings."
+    }
+
     & $commandScript -InstancePath $testRoot -ComponentName "latest-env" -NoRepository -Yes -WhatIf
     if (Test-Path -LiteralPath (Join-Path $testRoot "latest-env")) {
         throw "WhatIf unexpectedly created the component."

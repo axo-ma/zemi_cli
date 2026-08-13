@@ -128,6 +128,62 @@ function Get-VSCodeDefaultInterpreterPath {
     return '${workspaceFolder}/' + $relativePath
 }
 
+function Add-ComponentToVSCodeWorkspace {
+    param(
+        [string]$InstanceRoot,
+        [string]$ComponentName
+    )
+
+    $workspacePath = Join-Path $InstanceRoot ((Split-Path -Leaf $InstanceRoot) + ".code-workspace")
+    if (Test-Path -LiteralPath $workspacePath -PathType Leaf) {
+        try {
+            $workspace = Get-Content -LiteralPath $workspacePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        }
+        catch {
+            throw "The existing workspace file is not valid JSON: $workspacePath"
+        }
+        if ($workspace -isnot [PSCustomObject]) {
+            throw "The existing workspace file must contain a JSON object: $workspacePath"
+        }
+    }
+    else {
+        $workspace = [PSCustomObject][ordered]@{
+            folders = @()
+            settings = [PSCustomObject]@{}
+        }
+    }
+
+    [object[]]$folders = @(
+        if ($workspace.PSObject.Properties["folders"] -and $null -ne $workspace.folders) {
+            @($workspace.folders)
+        }
+    )
+    $componentAlreadyIncluded = @(
+        $folders | Where-Object {
+            $_ -is [PSCustomObject] -and
+            $_.PSObject.Properties["path"] -and
+            ([string]$_.path).TrimEnd('\', '/') -ieq $ComponentName
+        }
+    ).Count -gt 0
+
+    if (-not $componentAlreadyIncluded) {
+        $folders = @($folders) + @([PSCustomObject][ordered]@{ path = $ComponentName })
+    }
+    $workspace | Add-Member -MemberType NoteProperty -Name "folders" -Value $folders -Force
+    if (-not $workspace.PSObject.Properties["settings"] -or $null -eq $workspace.settings) {
+        $workspace | Add-Member -MemberType NoteProperty -Name "settings" -Value ([PSCustomObject]@{}) -Force
+    }
+
+    $workspaceContent = ($workspace | ConvertTo-Json -Depth 20) + [Environment]::NewLine
+    [IO.File]::WriteAllText(
+        $workspacePath,
+        $workspaceContent,
+        (New-Object Text.UTF8Encoding($false))
+    )
+
+    return $workspacePath
+}
+
 function Invoke-Git {
     param(
         [string[]]$Arguments,
@@ -316,11 +372,16 @@ if ($componentMarkers.Count -ne 1) {
     throw "ZEMI Component marker verification failed: $componentRoot"
 }
 
+$workspacePath = Add-ComponentToVSCodeWorkspace `
+    -InstanceRoot $instanceRoot `
+    -ComponentName $ComponentName
+
 Write-Host ""
 Write-Host "[OK] ZEMI Component created." -ForegroundColor Green
 Write-Host "Root:   $componentRoot"
 Write-Host "Marker: .zemicomp"
 Write-Host "VS Code: .vscode/settings.json"
+Write-Host "Workspace: $workspacePath"
 Write-Host "Python: $($defaultVenv.PythonPath)"
 if ($RepositoryUrl) {
     Write-Host "Origin: $RepositoryUrl"

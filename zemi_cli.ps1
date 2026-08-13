@@ -37,7 +37,6 @@ Commands:
   instance create - Create a ZEMI Instance
   instance deploy-winpython - Download and deploy WinPython
   instance setup-vscode-workspace - Create the default Python venv and configure the Instance workspace
-  vscode enable-multi-root - Create or update the ZEMI multi-root workspace
   vscode reset-python-settings - Reset Python and Jupyter in VS Code
 "@
         return
@@ -52,7 +51,6 @@ Commands:
     "instance create" { $scriptName = "instance_create.ps1" }
     "instance deploy-winpython" { $scriptName = "instance_deploy_winpython.ps1" }
     "instance setup-vscode-workspace" { $scriptName = "instance_setup_vscode_workspace.ps1" }
-    "vscode enable-multi-root" { $scriptName = "vscode_enable_multi_root.ps1" }
     "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
     default {
         $fullCommand = (@($Command) + @($CommandArguments)) -join " "

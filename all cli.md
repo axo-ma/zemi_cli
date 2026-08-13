@@ -8,14 +8,12 @@ Commands:
   component create-python-env - Create the component .venv from Instance WinPython
   instance create - Create a ZEMI Instance
   winpython download - Download WinPython
-  vscode enable-multi-root - Create or update the ZEMI multi-root workspace
   vscode reset-python-settings - Reset Python and Jupyter in VS Code
 
 Целевой набор
 
 + cli install -> zemi vscode install-cli
 + vscode reset-python-settings -> zemi vscode reset-python-settings
-+ vscode enable-multi-root -> zemi vscode enable-multi-root
 
 + instance create -> zemi instance create
 + winpython download -> zemi instance deploy-winpython

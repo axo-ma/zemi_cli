@@ -124,6 +124,10 @@ venv существует для нескольких WinPython, выбирае�
 нём `python.defaultInterpreterPath` с относительным путём к выбранному
 `@inst/_venvs/default-WPy64-<версия>/Scripts/python.exe`.
 
+Созданный компонент автоматически добавляется в
+`@inst/<имя-instance>.code-workspace`. Существующие папки и настройки workspace
+сохраняются.
+
 Команда не создаёт commit и не отправляет изменения автоматически. Сначала
 проверьте и настройте компонент, затем сделайте commit и push удобным вам образом. Например, выполните обычные команды Git:
 
@@ -146,25 +150,3 @@ zemi component set-default-python-venv
 свежего WinPython и обновит `.vscode/settings.json` в найденном корне, сохранив
 остальные настройки файла. Если default venv отсутствует, файл не изменяется,
 а команда выводит инструкцию по его созданию.
-
-## 6. Включение Multi-root Workspace в VS Code
-
-Из любого каталога внутри ZEMI Instance выполните:
-
-```powershell
-zemi vscode enable-multi-root
-```
-
-Закройте ваш VSCode и откройте в нем `@inst/ZEMI.code-workspace`.
-
-Команда создаст VSCode workspace и поместит туда все zemi компоненты внутри текущего Zemi Instance.
-
-Команда создаёт или обновляет файл `@inst/ZEMI.code-workspace`. В него входят
-непосредственные дочерние каталоги Instance с одним из маркеров:
-
-- `.zemicomp` — ZEMI Component;
-- `.zemiworkroot` — дополнительный корень workspace, например `zemi` или
-  `zemi_cli`.
-
-Пути внутри workspace-файла относительны корня Instance. Повторный запуск
-обновляет список каталогов и сохраняет остальные настройки workspace. 
