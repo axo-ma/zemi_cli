@@ -1,17 +1,18 @@
-# Промпт для разработки ZEMI CLI
+# ZEMI CLI Development Instructions
 
-Разрабатывай ZEMI CLI как простой портативный Windows CLI без лишних абстракций.
-Перед изменением изучи существующие команды и сохраняй совместимость с ними.
+Develop ZEMI CLI as a simple portable Windows CLI without unnecessary
+abstractions. Before making changes, study the existing commands and preserve
+compatibility with them.
 
-## Публичный интерфейс
+## Public interface
 
-- Пользователь вызывает только `zemi <команда>`.
-- `zemi.cmd` — минимальный launcher для PowerShell, CMD и терминала VS Code.
-- `zemi_cli.ps1` — диспетчер команд. Он разбирает аргументы и запускает нужный
-  PowerShell-скрипт.
-- Не заставляй пользователя запускать внутренние `*.ps1` напрямую или проверять
-  их через `Get-Command`.
-- Обязательные команды:
+- Users invoke only `zemi <command>`.
+- `zemi.cmd` is a minimal launcher for PowerShell, CMD, and the VS Code terminal.
+- `zemi_cli.ps1` is the command dispatcher. It parses arguments and runs the
+  appropriate PowerShell script.
+- Do not require users to run internal `*.ps1` files directly or inspect them
+  with `Get-Command`.
+- Required commands:
   - `zemi hello`;
   - `zemi help`;
   - `zemi vscode install-cli`;
@@ -20,46 +21,45 @@
   - `zemi instance deploy-winpython`;
   - `zemi vscode reset-python-settings`.
 
-## Имена файлов
+## File names
 
-- Именуй реализацию по шаблону `<группа>_<действие>.ps1`.
-- Примеры:
+- Name implementation files using the `<group>_<action>.ps1` pattern.
+- Examples:
   - `instance_create.ps1`;
   - `instance_deploy_winpython.ps1`;
   - `vscode_reset_python_settings.ps1`;
   - `vscode_install_cli.ps1`.
-- При переименовании сразу обновляй диспетчер, документацию и текстовые ссылки.
+- When renaming a file, update the dispatcher, documentation, and textual
+  references at the same time.
 
-## Простота
+## Simplicity
 
-- Пиши короткий прямолинейный код. Не добавляй фреймворки, классы, слои,
-  автодетекторы, резервные копии и режимы удаления без явного запроса.
-- Не создавай параметры, которые можно надёжно определить из текущего контекста.
-- Не открывай диалоги выбора файлов и каталогов.
-- Если обязательная программа не запущена, выведи понятную ошибку красным и
-  заверши команду с ненулевым кодом.
-- `zemi hello` должна быстро выводить `Hello from ZEMI!` и ничего не изменять.
+- Write short, straightforward code. Do not add frameworks, classes, layers,
+  auto-detection systems, backups, or removal modes without an explicit request.
+- Do not create parameters that can be reliably derived from the current context.
+- Do not open file or directory selection dialogs.
+- If a required program is not running, display a clear error in red and exit
+  the command with a nonzero status.
+- `zemi hello` must quickly print `Hello from ZEMI!` without changing anything.
 
-## Портативность
+## Portability
 
-- ZEMI CLI может находиться в любом месте на диске и появляется раньше любого
-  ZEMI Instance.
-- Никогда не привязывай расположение CLI к ZEMI Instance.
-- Определяй корень CLI через `$PSScriptRoot`.
-- Не изменяй системный или пользовательский Windows `PATH` и не пиши в реестр.
-- `zemi vscode install-cli` настраивает только VS Code: добавляет каталог CLI в
-  `terminal.integrated.env.windows.PATH` пользовательского `settings.json`.
-- Определяй запущенный `Code.exe`. Если VS Code не запущен, выведи красную ошибку.
-- Для portable VS Code используй `data\user-data\User`; для обычного VS Code —
+- ZEMI CLI can be located anywhere on disk and exists before any ZEMI Instance.
+- Never tie the CLI location to a ZEMI Instance.
+- Determine the CLI root through `$PSScriptRoot`.
+- Do not modify the system or user Windows `PATH`, and do not write to the registry.
+- `zemi vscode install-cli` configures only VS Code by adding the CLI directory
+  to `terminal.integrated.env.windows.PATH` in the user `settings.json`.
+- Detect a running `Code.exe`. If VS Code is not running, display a red error.
+- For portable VS Code, use `data\user-data\User`; for regular VS Code, use
   `%APPDATA%\Code\User`.
-- Не добавляй отдельную команду настройки Python. `zemi component create`
-  создаёт `.vscode/settings.json` с `python.defaultInterpreterPath`, указывающим
-  на `${workspaceFolder}/.venv/Scripts/python.exe`.
-- `zemi vscode reset-python-settings` не принимает параметры и очищает только
-  Python/Jupyter-настройки запущенного VS Code. Не сканируй ZEMI Instance, не
-  изменяй компоненты и не требуй WinPython.
+- Do not add a separate Python configuration command. `zemi component create`
+  creates `.vscode/settings.json` with `python.defaultInterpreterPath` pointing
+  to `${workspaceFolder}/.venv/Scripts/python.exe`.
+- `zemi vscode reset-python-settings` accepts no parameters and clears only the
+  Python/Jupyter settings of the running VS Code instance. Do not scan a ZEMI
+  Instance, modify components, or require WinPython.
 
+## Documentation and checks
 
-## Документация и проверки
-
-- При изменении команд синхронно обновляй `getting_started.md` и `zemi help`.
+- When changing commands, update `getting_started.md` and `zemi help` together.

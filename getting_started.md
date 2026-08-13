@@ -1,124 +1,124 @@
-# Путь разработчика: начало работы с ZEMI
+# Developer Path: Getting Started with ZEMI
 
 ## Prerequisites
 
-До создания ZEMI Instance разработчик подготавливает рабочее место:
+Before creating a ZEMI Instance, prepare the workstation:
 
-1. **Git** — обычная установка или portable-версия, на усмотрение разработчика.
-2. **Visual Studio Code** — обычная установка или portable-версия.
-3. Стандартные расширения VS Code:
+1. **Git** — a standard or portable installation.
+2. **Visual Studio Code** — a standard or portable installation.
+3. Standard VS Code extensions:
    - Microsoft Python (`ms-python.python`);
    - Microsoft Jupyter (`ms-toolsai.jupyter`).
-4. **7-Zip** — требуется для распаковки архива WinPython.
-5. Доступ в интернет — для загрузки WinPython и клонирования репозитория.
-6. Microsoft Office для работы с Excel.
+4. **7-Zip** — required to extract the WinPython archive.
+5. Internet access — required to download WinPython and clone repositories.
+6. Microsoft Office for working with Excel.
 
-> **Обозначение `@inst`.** В этом руководстве `@inst` означает путь к корню
-> конкретного ZEMI Instance. Это не буквальное имя каталога. Например, если
-> Instance находится в `D:\ZEMI\experiment-01`, то `@inst/_tmp` означает
+> **The `@inst` notation.** In this guide, `@inst` means the path to the root of
+> a specific ZEMI Instance. It is not a literal directory name. For example, if
+> the Instance is located at `D:\ZEMI\experiment-01`, then `@inst/_tmp` means
 > `D:\ZEMI\experiment-01\_tmp`.
 
-## 1. Развёртывание ZEMI CLI
+## 1. Deploying ZEMI CLI
 
-Выберите любое место на диске и клонируйте репозиторий ZEMI CLI:
+Choose any location on disk and clone the ZEMI CLI repository:
 
 ```powershell
 git clone https://github.com/axo-ma/zemi_cli.git
 cd .\zemi_cli
 ```
 
-Запустите VS Code. Должна быть открыта только одна установка VS Code. Затем из
-каталога ZEMI CLI выполните:
+Start VS Code. Only one VS Code installation should be running. Then run this
+command from the ZEMI CLI directory:
 
 ```powershell
 .\zemi.cmd vscode install-cli
 ```
 
-Команда добавит каталог ZEMI CLI только в `terminal.integrated.env.windows.PATH` пользовательских настроек VS Code.
+The command adds the ZEMI CLI directory only to
+`terminal.integrated.env.windows.PATH` in the VS Code user settings.
 
-Закройте существующие встроенные терминалы VS Code и создайте новый терминал.
-Проверьте глобальную команду:
+Close all existing integrated terminals in VS Code and open a new terminal.
+Verify the global command:
 
 ```powershell
 zemi hello
 ```
 
-Ожидаемый результат:
+Expected output:
 
 ```text
 Hello from ZEMI!
 ```
 
-Посмотреть доступные команды можно через `zemi help`.
+Run `zemi help` to see the available commands.
 
-Если VS Code раньше использовал другие Python-окружения или ядра Jupyter,
-сбросьте старые настройки:
+If VS Code previously used other Python environments or Jupyter kernels, clear
+the old settings:
 
 ```powershell
 zemi vscode reset-python-settings
 ```
 
-После команды перезапустите VS Code. Для новой установки этот шаг можно
-пропустить: команда создания компонента настроит интерпретатор автоматически.
+Restart VS Code after the command. You can skip this step for a new installation
+because the component creation command configures the interpreter automatically.
 
-## 2. Создание Zemi instance
+## 2. Creating a ZEMI Instance
 
-На одной машине можно создать произвольное количество независимых ZEMI Instance.
+You can create any number of independent ZEMI Instances on one machine.
 
-Чтобы создать каталог для ZEMI Instance, запустите:
+To create a ZEMI Instance directory, run:
 
 ```powershell
 zemi instance create
 ```
 
-Команда создаст выбранный каталог ZEMI Instance и файл-маркер `.zemiinst_exp`
-непосредственно в его корне.
+The command creates the selected ZEMI Instance directory and places the
+`.zemiinst_exp` marker file directly in its root.
 
-Чтобы установить WinPython внутри созданного ZEMI Instance, перейдите в его
-каталог и запустите:
+To install WinPython inside the new ZEMI Instance, navigate to its directory and
+run:
 
 ```powershell
 zemi instance deploy-winpython
 ```
 
-Команда скачает архив WinPython в `@inst/_tmp` и предложит распаковать его в
-`@inst/_pythons`.
+The command downloads the WinPython archive to `@inst/_tmp` and offers to
+extract it to `@inst/_pythons`.
 
-Чтобы создать файл workspace для ZEMI Instance и настроить default Python venv,
-запустите:
+To create the ZEMI Instance workspace file and configure the default Python
+virtual environment, run:
 
 ```powershell
 zemi instance setup-vscode-workspace
 ```
 
-Команда создаст default Python venv в `@inst/_venvs` и файл
-`@inst/<имя-instance>.code-workspace`.
+The command creates the default Python virtual environment in `@inst/_venvs`
+and the `@inst/<instance-name>.code-workspace` file.
 
-После завершения закройте VS Code, откройте
-`@inst/<имя-instance>.code-workspace` и при запросе Workspace Trust подтвердите
-доверие.
+When it finishes, close VS Code, open `@inst/<instance-name>.code-workspace`,
+and confirm trust when VS Code displays the Workspace Trust prompt.
 
-## 3. Создание ZEMI компонента
+## 3. Creating a ZEMI Component
 
-Чтобы создать ZEMI Component из шаблона, находясь внутри ZEMI Instance,
-запустите:
+To create a ZEMI Component from the template while inside a ZEMI Instance, run:
 
 ```powershell
 zemi component create my_component
 ```
 
-Команда создаст каталог компонента с маркером `.zemicomp`, настроит использование
-default Python venv и добавит компонент в workspace текущего ZEMI Instance.
+The command creates the component directory with a `.zemicomp` marker,
+configures it to use the default Python virtual environment, and adds the
+component to the current ZEMI Instance workspace.
 
-При создании можно указать URL пустого Git-репозитория — он будет добавлен как
-`origin`. Если удалённый репозиторий не нужен, оставьте URL пустым.
+During creation, you can specify the URL of an empty Git repository to add it as
+`origin`. Leave the URL empty if you do not need a remote repository.
 
-После создания вернитесь в VS Code и при запросе доверия к добавленному
-компоненту нажмите **Yes**.
+After creation, return to VS Code and click **Yes** if it asks whether you trust
+the added component.
 
-Проверьте созданный компонент, затем создайте первый commit средствами VS Code
-или командами ниже. Если настроен `origin`, отправьте commit в удалённый
-репозиторий:
+Review the new component, then create the first commit with VS Code or the
+commands below. If `origin` is configured, push the commit to the remote
+repository:
 
 ```powershell
 git add -A
