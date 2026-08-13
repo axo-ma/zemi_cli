@@ -113,6 +113,13 @@ zemi instance setup-vscode-workspace
 zemi component create my_component
 ```
 
+После первого создания откройте файл
+`@inst/<имя-instance>.code-workspace` через **File → Open Workspace from File…**.
+При первом открытии VS Code покажет Workspace Trust: нажмите **Trust** или
+добавьте корень ZEMI Instance в **Trusted Folders & Workspaces**. Это действие
+нужно выполнить один раз для каждого нового Instance; CLI не назначает доверие
+автоматически, поскольку это пользовательское решение безопасности VS Code.
+
 В процессе можно указать URL заранее созданного пустого Git-репозитория.  после чего комманда добавит его как новый `origin`.
 
 Наличие default Python venv обязательно. Если его нет, команда подскажет
@@ -128,6 +135,11 @@ venv существует для нескольких WinPython, выбирае�
 `@inst/<имя-instance>.code-workspace`. Существующие папки и настройки workspace
 сохраняются.
 
+При добавлении нового компонента VS Code может показать вопрос
+**Do you trust the authors of the files in this folder?** Если вы доверяете
+созданному компоненту, нажмите **Yes**. Такое подтверждение может потребоваться
+для каждого нового компонента, добавляемого в открытый workspace.
+
 Команда не создаёт commit и не отправляет изменения автоматически. Сначала
 проверьте и настройте компонент, затем сделайте commit и push удобным вам образом. Например, выполните обычные команды Git:
 
@@ -136,17 +148,3 @@ git add -A
 git commit -m "Initialize ZEMI component"
 git push -u origin main
 ```
-
-## 5. Назначение default Python venv существующему проекту
-
-Перейдите в корень компонента или любой вложенный каталог и выполните:
-
-```powershell
-zemi component set-default-python-venv
-```
-
-Команда найдёт ближайший корень проекта по маркеру `.zemicomp` или
-`.zemiworkroot`, затем найдёт ZEMI Instance, выберет default venv для самого
-свежего WinPython и обновит `.vscode/settings.json` в найденном корне, сохранив
-остальные настройки файла. Если default venv отсутствует, файл не изменяется,
-а команда выводит инструкцию по его созданию.

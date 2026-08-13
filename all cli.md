@@ -28,5 +28,5 @@ Commands:
 - zemi full component update-zemilib
 
 Debugging only
-+ zemi component set-default-python-venv - относительный путь на vnenv
-+ zemi component set-default-python-venv2 - абсолбтный путь на venv
++ zemi debug component set-default-python-venv - относительный путь на vnenv
++ zemi debug component set-default-python-venv2 - абсолбтный путь на venv

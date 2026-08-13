@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $cliRoot = Split-Path -Parent $PSScriptRoot
-$commandScript = Join-Path $cliRoot "component_set_default_python_venv.ps1"
+$commandScript = Join-Path $cliRoot "debug_component_set_default_python_venv.ps1"
 $instanceRoot = Split-Path -Parent $cliRoot
 $temporaryRoot = Join-Path $instanceRoot "_tmp"
 
@@ -73,7 +73,7 @@ try {
         throw "The absolute-path debug mode did not write the absolute Python path."
     }
 
-    Write-Host "[OK] component set-default-python-venv tests passed." -ForegroundColor Green
+    Write-Host "[OK] debug component set-default-python-venv tests passed." -ForegroundColor Green
 }
 finally {
     Set-Location -LiteralPath $originalLocation
