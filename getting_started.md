@@ -11,7 +11,7 @@
    - Microsoft Jupyter (`ms-toolsai.jupyter`).
 4. **7-Zip** — требуется для распаковки архива WinPython.
 5. Доступ в интернет — для загрузки WinPython и клонирования репозитория.
-6. MSOffice для работы с Excel
+6. Microsoft Office для работы с Excel.
 
 > **Обозначение `@inst`.** В этом руководстве `@inst` означает путь к корню
 > конкретного ZEMI Instance. Это не буквальное имя каталога. Например, если
@@ -59,89 +59,66 @@ zemi vscode reset-python-settings
 ```
 
 После команды перезапустите VS Code. Для новой установки этот шаг можно
-пропустить: созданный компонент содержит локальную настройку интерпретатора
-`${workspaceFolder}/.venv/Scripts/python.exe`.
+пропустить: команда создания компонента настроит интерпретатор автоматически.
 
-## 2. Создание экспериментального ZEMI Instance
+## 2. Создание Zemi instance
 
 На одной машине можно создать произвольное количество независимых ZEMI Instance.
 
-Чтобы создать каталог ZEMI Instance, запустите:
+Чтобы создать каталог для ZEMI Instance, запустите:
 
 ```powershell
 zemi instance create
 ```
 
-## 3. Загрузка WinPython 3.12
+Команда создаст выбранный каталог ZEMI Instance и файл-маркер `.zemiinst_exp`
+непосредственно в его корне.
 
-Чтобы скачать WinPython, запустите:
+Чтобы установить WinPython внутри созданного ZEMI Instance, перейдите в его
+каталог и запустите:
 
 ```powershell
 zemi instance deploy-winpython
 ```
 
-Как альтернатива, можете скачать WinPython самостоятельно
-[Winpython64-3.12.10.1slim.7z](https://github.com/winpython/winpython/releases/download/16.6.20250620final/Winpython64-3.12.10.1slim.7z)
+Команда скачает архив WinPython в `@inst/_tmp` и предложит распаковать его в
+`@inst/_pythons`.
 
-Команда сама найдёт ZEMI Instance по маркеру в текущем каталоге или одном из
-родительских каталогов и сохранит архив в `@inst/_tmp`. После проверки архива
-она предложит сразу распаковать WinPython с помощью 7-Zip в:
-
-```text
-@inst/_pythons
-```
-
-После успешной распаковки команда предложит удалить скачанный `.7z`-архив.
-Если каталогов `@inst/_tmp` или `@inst/_pythons` ещё нет, команда создаст их
-автоматически.
-
-Проверьте интерпретатор:
-
-```text
-@inst/_pythons/WPy64-312101/python/python.exe --version
-```
-
-Ожидаемая версия: `Python 3.12.10`.
-
-## 4. Создание ZEMI компонента из шаблона
-
-Сначала создайте default Python venv для установленного WinPython, затем
-запустите создание компонента:
+Чтобы создать файл workspace для ZEMI Instance и настроить default Python venv,
+запустите:
 
 ```powershell
 zemi instance setup-vscode-workspace
+```
+
+Команда создаст default Python venv в `@inst/_venvs` и файл
+`@inst/<имя-instance>.code-workspace`.
+
+После завершения закройте VS Code, откройте
+`@inst/<имя-instance>.code-workspace` и при запросе Workspace Trust подтвердите
+доверие.
+
+## 3. Создание ZEMI компонента
+
+Чтобы создать ZEMI Component из шаблона, находясь внутри ZEMI Instance,
+запустите:
+
+```powershell
 zemi component create my_component
 ```
 
-После первого создания откройте файл
-`@inst/<имя-instance>.code-workspace` через **File → Open Workspace from File…**.
-При первом открытии VS Code покажет Workspace Trust: нажмите **Trust** или
-добавьте корень ZEMI Instance в **Trusted Folders & Workspaces**. Это действие
-нужно выполнить один раз для каждого нового Instance; CLI не назначает доверие
-автоматически, поскольку это пользовательское решение безопасности VS Code.
+Команда создаст каталог компонента с маркером `.zemicomp`, настроит использование
+default Python venv и добавит компонент в workspace текущего ZEMI Instance.
 
-В процессе можно указать URL заранее созданного пустого Git-репозитория.  после чего комманда добавит его как новый `origin`.
+При создании можно указать URL пустого Git-репозитория — он будет добавлен как
+`origin`. Если удалённый репозиторий не нужен, оставьте URL пустым.
 
-Наличие default Python venv обязательно. Если его нет, команда подскажет
-`zemi instance setup-vscode-workspace` и не создаст компонент. Если default
-venv существует для нескольких WinPython, выбирается окружение с наибольшим
-числовым суффиксом имени WinPython.
+После создания вернитесь в VS Code и при запросе доверия к добавленному
+компоненту нажмите **Yes**.
 
-Команда также создаёт локальный файл `@comp/.vscode/settings.json` и задаёт в
-нём `python.defaultInterpreterPath` с относительным путём к выбранному
-`@inst/_venvs/default-WPy64-<версия>/Scripts/python.exe`.
-
-Созданный компонент автоматически добавляется в
-`@inst/<имя-instance>.code-workspace`. Существующие папки и настройки workspace
-сохраняются.
-
-При добавлении нового компонента VS Code может показать вопрос
-**Do you trust the authors of the files in this folder?** Если вы доверяете
-созданному компоненту, нажмите **Yes**. Такое подтверждение может потребоваться
-для каждого нового компонента, добавляемого в открытый workspace.
-
-Команда не создаёт commit и не отправляет изменения автоматически. Сначала
-проверьте и настройте компонент, затем сделайте commit и push удобным вам образом. Например, выполните обычные команды Git:
+Проверьте созданный компонент, затем создайте первый commit средствами VS Code
+или командами ниже. Если настроен `origin`, отправьте commit в удалённый
+репозиторий:
 
 ```powershell
 git add -A
