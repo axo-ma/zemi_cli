@@ -16,26 +16,9 @@ try {
     [void](New-Item -ItemType Directory -Path $testRoot)
     [void](New-Item -ItemType File -Path (Join-Path $testRoot ".zemiinst_exp"))
 
-    $missingVenvFailed = $false
-    try {
-        & $commandScript -InstancePath $testRoot -ComponentName "missing-env" -NoRepository -Yes -WhatIf
-    }
-    catch {
-        $missingVenvFailed = $_.Exception.Message -match 'zemi instance setup-vscode-workspace' -and
-            $_.Exception.Message -match 'component was not created'
-    }
-    if (-not $missingVenvFailed) {
-        throw "Component creation did not reject an Instance without a default venv."
-    }
+    & $commandScript -InstancePath $testRoot -ComponentName "missing-env" -NoRepository -Yes -WhatIf
     if (Test-Path -LiteralPath (Join-Path $testRoot "missing-env")) {
-        throw "Component creation modified the target when the default venv was missing."
-    }
-
-    foreach ($version in @("312101", "313100")) {
-        $venvRoot = Join-Path $testRoot "_venvs\default-WPy64-$version"
-        [void](New-Item -ItemType Directory -Path (Join-Path $venvRoot "Scripts") -Force)
-        [void](New-Item -ItemType File -Path (Join-Path $venvRoot "Scripts\python.exe"))
-        [void](New-Item -ItemType File -Path (Join-Path $venvRoot "pyvenv.cfg"))
+        throw "WhatIf unexpectedly created the component."
     }
 
     $tokens = $null
@@ -48,29 +31,9 @@ try {
     if ($parseErrors.Count -gt 0) {
         throw "component_create.ps1 contains PowerShell syntax errors."
     }
-    $finderDefinition = $syntaxTree.Find(
-        { param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
-            $node.Name -eq "Find-LatestDefaultPythonVenv" },
-        $true
-    )
-    Invoke-Expression $finderDefinition.Extent.Text
-    $selectedVenv = Find-LatestDefaultPythonVenv -InstanceRoot $testRoot
-    if ($selectedVenv.Name -ne "default-WPy64-313100") {
-        throw "Component creation did not select the default venv for the newest WinPython."
-    }
-
-    $pathDefinition = $syntaxTree.Find(
-        { param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
-            $node.Name -eq "Get-VSCodeDefaultInterpreterPath" },
-        $true
-    )
-    Invoke-Expression $pathDefinition.Extent.Text
-    $interpreterPath = Get-VSCodeDefaultInterpreterPath `
-        -ProjectRoot (Join-Path $testRoot "latest-env") `
-        -PythonPath $selectedVenv.PythonPath
-    $expectedInterpreterPath = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
-    if ($interpreterPath -cne $expectedInterpreterPath) {
-        throw "Unexpected VS Code interpreter path: $interpreterPath"
+    $commandScriptContent = Get-Content -LiteralPath $commandScript -Raw -Encoding UTF8
+    if ($commandScriptContent -match 'defaultInterpreterPath|Find-LatestDefaultPythonVenv|\.vscode') {
+        throw "Component creation still contains Python environment or VS Code settings logic."
     }
 
     $workspaceDefinition = $syntaxTree.Find(
@@ -85,21 +48,21 @@ try {
         '{"folders":[],"settings":{"existing.setting":true}}',
         (New-Object Text.UTF8Encoding($false))
     )
-    [void](Add-ComponentToVSCodeWorkspace -InstanceRoot $testRoot -ComponentName "latest-env")
-    [void](Add-ComponentToVSCodeWorkspace -InstanceRoot $testRoot -ComponentName "latest-env")
+    [void](Add-ComponentToVSCodeWorkspace -InstanceRoot $testRoot -ComponentName "new-component")
+    [void](Add-ComponentToVSCodeWorkspace -InstanceRoot $testRoot -ComponentName "new-component")
     $workspace = Get-Content -LiteralPath $workspacePath -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($workspace.folders -isnot [array]) {
         throw "The Instance workspace folders property is not a JSON array."
     }
-    if (@($workspace.folders.path) -join ',' -cne 'latest-env') {
+    if (@($workspace.folders.path) -join ',' -cne 'new-component') {
         throw "Component creation did not add the project to the Instance workspace exactly once."
     }
     if ($workspace.settings.'existing.setting' -ne $true) {
         throw "Component creation did not preserve existing workspace settings."
     }
 
-    & $commandScript -InstancePath $testRoot -ComponentName "latest-env" -NoRepository -Yes -WhatIf
-    if (Test-Path -LiteralPath (Join-Path $testRoot "latest-env")) {
+    & $commandScript -InstancePath $testRoot -ComponentName "new-component" -NoRepository -Yes -WhatIf
+    if (Test-Path -LiteralPath (Join-Path $testRoot "new-component")) {
         throw "WhatIf unexpectedly created the component."
     }
 

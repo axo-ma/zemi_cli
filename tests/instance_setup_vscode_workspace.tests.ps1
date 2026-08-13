@@ -47,6 +47,9 @@ try {
     if ($workspace.settings.'python.defaultInterpreterPath' -cne $latestVenvRoot + "\Scripts\python.exe") {
         throw "The workspace default Python path is incorrect."
     }
+    if ($workspace.settings.'python.terminal.activateEnvironment' -cne $true) {
+        throw "The workspace does not enable Python environment activation in terminals."
+    }
     if ($workspace.settings.'terminal.integrated.cwd' -cne $testRoot) {
         throw "The workspace terminal directory is not the ZEMI Instance root."
     }

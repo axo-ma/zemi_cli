@@ -208,6 +208,11 @@ $workspace.settings | Add-Member `
     -Force
 $workspace.settings | Add-Member `
     -MemberType NoteProperty `
+    -Name "python.terminal.activateEnvironment" `
+    -Value $true `
+    -Force
+$workspace.settings | Add-Member `
+    -MemberType NoteProperty `
     -Name "terminal.integrated.cwd" `
     -Value $instanceRoot `
     -Force

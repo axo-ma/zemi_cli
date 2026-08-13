@@ -106,15 +106,20 @@ To create a ZEMI Component from the template while inside a ZEMI Instance, run:
 zemi component create my_component
 ```
 
-The command creates the component directory with a `.zemicomp` marker,
-configures it to use the default Python virtual environment, and adds the
-component to the current ZEMI Instance workspace.
+The command creates the component directory with a `.zemicomp` marker and adds
+the component to the current ZEMI Instance workspace. It does not create or
+configure a Python virtual environment and does not modify the component's
+`.vscode/settings.json` file.
 
 During creation, you can specify the URL of an empty Git repository to add it as
 `origin`. Leave the URL empty if you do not need a remote repository.
 
 After creation, return to VS Code and click **Yes** if it asks whether you trust
 the added component.
+
+After creating the first component in a ZEMI Instance, it is recommended to
+restart VS Code and reopen the Instance workspace. This avoids occasional VS
+Code issues when it detects the first newly added workspace root.
 
 Review the new component, then create the first commit with VS Code or the
 commands below. If `origin` is configured, push the commit to the remote

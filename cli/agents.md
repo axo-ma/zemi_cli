@@ -51,6 +51,8 @@ compatibility with them.
 - `zemi vscode install-cli` configures only VS Code by adding the CLI directory
   to `terminal.integrated.env.windows.PATH` in the user `settings.json`.
 - Detect a running `Code.exe`. If VS Code is not running, display a red error.
+- `zemi component create` must not create or select a Python virtual environment,
+  modify `.vscode/settings.json`, or set `python.defaultInterpreterPath`.
 - `zemi vscode reset-python-settings` accepts no parameters and clears only the
   Python/Jupyter settings of the running VS Code instance. Do not scan a ZEMI
   Instance, modify components, or require WinPython.
