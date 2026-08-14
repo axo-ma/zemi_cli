@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $cliRoot = Split-Path -Parent $PSScriptRoot
-$commandScript = Join-Path $cliRoot "instance_fix_vscode_venv_activation.ps1"
+$commandScript = Join-Path $cliRoot "vscode_fix_venv_activation.ps1"
 $instanceRoot = Split-Path -Parent $cliRoot
 $temporaryRoot = Join-Path $instanceRoot "_tmp"
 
@@ -22,7 +22,7 @@ try {
         [ref]$parseErrors
     )
     if ($parseErrors.Count -gt 0) {
-        throw "instance_fix_vscode_venv_activation.ps1 contains PowerShell syntax errors."
+        throw "vscode_fix_venv_activation.ps1 contains PowerShell syntax errors."
     }
 
     foreach ($functionName in @(
@@ -83,7 +83,7 @@ try {
         throw "The profile update is not idempotent:`n$profile"
     }
 
-    Write-Host "[OK] instance fix-vscode-venv-activation tests passed." -ForegroundColor Green
+    Write-Host "[OK] vscode fix-venv-activation tests passed." -ForegroundColor Green
 }
 finally {
     if (Test-Path -LiteralPath $testRoot) {

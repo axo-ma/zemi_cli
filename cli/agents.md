@@ -20,7 +20,7 @@ compatibility with them.
   - `zemi instance create`;
   - `zemi instance deploy-winpython`;
   - `zemi instance setup-vscode-workspace`;
-  - `zemi instance fix-vscode-venv-activation`;
+  - `zemi vscode fix-venv-activation`;
   - `zemi vscode reset-python-settings`.
 
 ## File names
@@ -50,7 +50,7 @@ compatibility with them.
 - Never tie the CLI location to a ZEMI Instance.
 - Determine the CLI root through `$PSScriptRoot`.
 - Do not modify the system or user Windows `PATH`.
-- Only `zemi instance fix-vscode-venv-activation` may set the current user's
+- Only `zemi vscode fix-venv-activation` may set the current user's
   PowerShell execution policy to `RemoteSigned`; no CLI command may modify
   machine-wide execution policy.
 - `zemi vscode install-cli` configures only VS Code by adding the CLI directory

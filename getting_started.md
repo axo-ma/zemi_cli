@@ -40,7 +40,7 @@ The command adds the ZEMI CLI directory only to
 Immediately configure reliable Python venv activation for VS Code:
 
 ```powershell
-.\zemi.cmd instance fix-vscode-venv-activation
+.\zemi.cmd vscode fix-venv-activation
 ```
 
 The command enables the Python Environments `shellStartup` mode, installs the
