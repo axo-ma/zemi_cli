@@ -69,6 +69,7 @@ function Find-LatestDefaultPythonVenv {
                         [pscustomobject]@{
                             Name = $_.Name
                             NumericVersion = $numericVersion
+                            Root = [IO.Path]::GetFullPath($_.FullName)
                             PythonPath = [IO.Path]::GetFullPath(
                                 (Join-Path $_.FullName "Scripts\python.exe")
                             )
@@ -119,22 +120,45 @@ else {
     $settings = [PSCustomObject]@{}
 }
 
-$interpreterPath = if ($AbsolutePath) {
-    $defaultVenv.PythonPath
+$environmentSearchPath = if ($AbsolutePath) {
+    $defaultVenv.Root
 }
 else {
-    '${workspaceFolder}/' + [Uri]::UnescapeDataString(
+    [Uri]::UnescapeDataString(
         (New-Object Uri(
             ([IO.Path]::GetFullPath($projectRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
-        )).MakeRelativeUri((New-Object Uri($defaultVenv.PythonPath))).ToString()
-    )
+        )).MakeRelativeUri((New-Object Uri(
+            $defaultVenv.Root.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+        ))).ToString()
+    ).TrimEnd('/')
 }
 
+foreach ($legacyName in @(
+    "python.defaultInterpreterPath",
+    "python.terminal.activateEnvironment"
+)) {
+    $legacyProperty = $settings.PSObject.Properties[$legacyName]
+    if ($legacyProperty) {
+        $settings.PSObject.Properties.Remove($legacyName)
+    }
+}
 $settings |
     Add-Member `
         -MemberType NoteProperty `
-        -Name "python.defaultInterpreterPath" `
-        -Value $interpreterPath `
+        -Name "python-envs.pythonProjects" `
+        -Value @(
+            [PSCustomObject][ordered]@{
+                path = "."
+                envManager = "ms-python.python:venv"
+                packageManager = "ms-python.python:pip"
+            }
+        ) `
+        -Force
+$settings |
+    Add-Member `
+        -MemberType NoteProperty `
+        -Name "python-envs.workspaceSearchPaths" `
+        -Value @($environmentSearchPath) `
         -Force
 
 if (-not $PSCmdlet.ShouldProcess($settingsPath, "Set the project default Python venv to $($defaultVenv.Name)")) {

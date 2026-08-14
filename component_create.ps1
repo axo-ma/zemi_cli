@@ -83,6 +83,109 @@ function Resolve-ZemiInstanceRoot {
     return $resolvedPath
 }
 
+function Find-LatestDefaultPythonVenv {
+    param([string]$InstanceRoot)
+
+    $venvsRoot = Join-Path $InstanceRoot "_venvs"
+    if (-not (Test-Path -LiteralPath $venvsRoot -PathType Container)) {
+        return $null
+    }
+
+    $defaultVenvs = @(
+        Get-ChildItem -LiteralPath $venvsRoot -Directory |
+            ForEach-Object {
+                if ($_.Name -match '^default-(WPy64-(\d+))$' -and
+                    (Test-Path -LiteralPath (Join-Path $_.FullName "Scripts\python.exe") -PathType Leaf) -and
+                    (Test-Path -LiteralPath (Join-Path $_.FullName "pyvenv.cfg") -PathType Leaf)) {
+                    $numericVersion = 0L
+                    if ([long]::TryParse($Matches[2], [ref]$numericVersion)) {
+                        [PSCustomObject]@{
+                            Name = $_.Name
+                            NumericVersion = $numericVersion
+                            Root = $_.FullName
+                            PythonPath = Join-Path $_.FullName "Scripts\python.exe"
+                        }
+                    }
+                }
+            }
+    )
+
+    return $defaultVenvs |
+        Sort-Object -Property NumericVersion, Name -Descending |
+        Select-Object -First 1
+}
+
+function Set-ProjectVSCodePythonEnvironment {
+    param(
+        [string]$ProjectRoot,
+        [string]$VenvRoot
+    )
+
+    $settingsRoot = Join-Path $ProjectRoot ".vscode"
+    $settingsPath = Join-Path $settingsRoot "settings.json"
+    if (Test-Path -LiteralPath $settingsPath -PathType Leaf) {
+        try {
+            $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 |
+                ConvertFrom-Json
+        }
+        catch {
+            throw "The project VS Code settings file is not valid JSON: $settingsPath"
+        }
+        if ($settings -isnot [PSCustomObject]) {
+            throw "The project VS Code settings file must contain a JSON object: $settingsPath"
+        }
+    }
+    else {
+        $settings = [PSCustomObject]@{}
+    }
+
+    foreach ($legacyName in @(
+        "python.defaultInterpreterPath",
+        "python.terminal.activateEnvironment"
+    )) {
+        $legacyProperty = $settings.PSObject.Properties[$legacyName]
+        if ($legacyProperty) {
+            $settings.PSObject.Properties.Remove($legacyName)
+        }
+    }
+
+    $projectUri = New-Object Uri(
+        ([IO.Path]::GetFullPath($ProjectRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
+    )
+    $venvUri = New-Object Uri(
+        ([IO.Path]::GetFullPath($VenvRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
+    )
+    $relativeVenvRoot = [Uri]::UnescapeDataString(
+        $projectUri.MakeRelativeUri($venvUri).ToString()
+    ).TrimEnd('/')
+
+    $settings | Add-Member `
+        -MemberType NoteProperty `
+        -Name "python-envs.pythonProjects" `
+        -Value @(
+            [PSCustomObject][ordered]@{
+                path = "."
+                envManager = "ms-python.python:venv"
+                packageManager = "ms-python.python:pip"
+            }
+        ) `
+        -Force
+    $settings | Add-Member `
+        -MemberType NoteProperty `
+        -Name "python-envs.workspaceSearchPaths" `
+        -Value @($relativeVenvRoot) `
+        -Force
+
+    [void](New-Item -ItemType Directory -Path $settingsRoot -Force)
+    $settingsContent = ($settings | ConvertTo-Json -Depth 20) + [Environment]::NewLine
+    [IO.File]::WriteAllText(
+        $settingsPath,
+        $settingsContent,
+        (New-Object Text.UTF8Encoding($false))
+    )
+    return $settingsPath
+}
+
 function Add-ComponentToVSCodeWorkspace {
     param(
         [string]$InstanceRoot,
@@ -202,6 +305,15 @@ while (-not (Test-ZemiComponentName -Name $ComponentName)) {
     $ComponentName = (Read-Host "ZEMI Component folder name").Trim()
 }
 
+$defaultVenv = Find-LatestDefaultPythonVenv -InstanceRoot $instanceRoot
+if (-not $defaultVenv) {
+    throw @"
+No default Python venv was found in this ZEMI Instance.
+Create one, then run this command again:
+  zemi instance setup-vscode-workspace -InstancePath "$instanceRoot"
+"@
+}
+
 $componentRoot = Join-Path $instanceRoot $ComponentName
 if (Test-Path -LiteralPath $componentRoot) {
     throw "The target already exists; refusing to modify it: $componentRoot"
@@ -238,6 +350,10 @@ $componentMarkerPath = Join-Path $componentRoot ".zemicomp"
 if (-not (Test-Path -LiteralPath $componentMarkerPath -PathType Leaf)) {
     [void](New-Item -ItemType File -Path $componentMarkerPath)
 }
+
+$projectSettingsPath = Set-ProjectVSCodePythonEnvironment `
+    -ProjectRoot $componentRoot `
+    -VenvRoot $defaultVenv.Root
 
 if (-not $RepositoryUrl -and -not $NoRepository -and -not $Yes) {
     Write-Host ""
@@ -291,6 +407,8 @@ Write-Host "[OK] ZEMI Component created." -ForegroundColor Green
 Write-Host "Root:   $componentRoot"
 Write-Host "Marker: .zemicomp"
 Write-Host "Workspace: $workspacePath"
+Write-Host "Python: $($defaultVenv.PythonPath)"
+Write-Host "Settings: $projectSettingsPath"
 if ($RepositoryUrl) {
     Write-Host "Origin: $RepositoryUrl"
 }

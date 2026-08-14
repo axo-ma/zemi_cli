@@ -19,6 +19,8 @@ compatibility with them.
   - `zemi component create`;
   - `zemi instance create`;
   - `zemi instance deploy-winpython`;
+  - `zemi instance setup-vscode-workspace`;
+  - `zemi instance fix-vscode-venv-activation`;
   - `zemi vscode reset-python-settings`.
 
 ## File names
@@ -47,12 +49,19 @@ compatibility with them.
 - ZEMI CLI can be located anywhere on disk and exists before any ZEMI Instance.
 - Never tie the CLI location to a ZEMI Instance.
 - Determine the CLI root through `$PSScriptRoot`.
-- Do not modify the system or user Windows `PATH`, and do not write to the registry.
+- Do not modify the system or user Windows `PATH`.
+- Only `zemi instance fix-vscode-venv-activation` may set the current user's
+  PowerShell execution policy to `RemoteSigned`; no CLI command may modify
+  machine-wide execution policy.
 - `zemi vscode install-cli` configures only VS Code by adding the CLI directory
   to `terminal.integrated.env.windows.PATH` in the user `settings.json`.
 - Detect a running `Code.exe`. If VS Code is not running, display a red error.
-- `zemi component create` must not create or select a Python virtual environment,
-  modify `.vscode/settings.json`, or set `python.defaultInterpreterPath`.
+- `zemi component create` must not create a Python virtual environment. It must
+  configure the component for the newest valid `default-WPy64-*` environment
+  using `python-envs.pythonProjects` and `python-envs.workspaceSearchPaths`.
+- Do not write `python.defaultInterpreterPath` or
+  `python.terminal.activateEnvironment`; remove these legacy keys when updating
+  settings controlled by ZEMI.
 - `zemi vscode reset-python-settings` accepts no parameters and clears only the
   Python/Jupyter settings of the running VS Code instance. Do not scan a ZEMI
   Instance, modify components, or require WinPython.

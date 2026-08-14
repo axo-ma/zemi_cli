@@ -39,9 +39,13 @@ try {
 
     $settings = Get-Content -LiteralPath (Join-Path $vscodeRoot "settings.json") -Raw |
         ConvertFrom-Json
-    $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
-    if ($settings.'python.defaultInterpreterPath' -cne $expectedPython) {
+    $expectedSearchPath = '../_venvs/default-WPy64-313100'
+    if (@($settings.'python-envs.workspaceSearchPaths') -join ',' -cne $expectedSearchPath) {
         throw "The newest default Python venv was not assigned to the component."
+    }
+    if (@($settings.'python-envs.pythonProjects').Count -ne 1 -or
+        $settings.'python-envs.pythonProjects'[0].path -cne '.') {
+        throw "The component was not registered as a Python project."
     }
     if ($settings.'editor.formatOnSave' -ne $true) {
         throw "An existing VS Code setting was not preserved."
@@ -60,17 +64,17 @@ try {
         throw "VS Code settings were not created for a .zemiworkroot project."
     }
     $workRootSettings = Get-Content -LiteralPath $workRootSettingsPath -Raw | ConvertFrom-Json
-    if ($workRootSettings.'python.defaultInterpreterPath' -cne $expectedPython) {
+    if (@($workRootSettings.'python-envs.workspaceSearchPaths') -join ',' -cne $expectedSearchPath) {
         throw "The default Python venv was not assigned to the .zemiworkroot project."
     }
 
     & $commandScript -AbsolutePath
     $absoluteSettings = Get-Content -LiteralPath $workRootSettingsPath -Raw | ConvertFrom-Json
-    $expectedAbsolutePython = [IO.Path]::GetFullPath(
-        (Join-Path $testRoot "_venvs\default-WPy64-313100\Scripts\python.exe")
+    $expectedAbsoluteVenv = [IO.Path]::GetFullPath(
+        (Join-Path $testRoot "_venvs\default-WPy64-313100")
     )
-    if ($absoluteSettings.'python.defaultInterpreterPath' -cne $expectedAbsolutePython) {
-        throw "The absolute-path debug mode did not write the absolute Python path."
+    if (@($absoluteSettings.'python-envs.workspaceSearchPaths') -join ',' -cne $expectedAbsoluteVenv) {
+        throw "The absolute-path debug mode did not write the absolute venv path."
     }
 
     Write-Host "[OK] debug component set-default-python-venv tests passed." -ForegroundColor Green

@@ -32,6 +32,12 @@ try {
         -Value "include-system-site-packages = true"
     [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b"))
     [void](New-Item -ItemType File -Path (Join-Path $testRoot "component_b\.zemicomp"))
+    [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b\.vscode"))
+    [IO.File]::WriteAllText(
+        (Join-Path $testRoot "component_b\.vscode\settings.json"),
+        '{"editor.formatOnSave":true,"python.defaultInterpreterPath":"old","python.terminal.activateEnvironment":true}',
+        (New-Object Text.UTF8Encoding($false))
+    )
     [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "project_a"))
     [void](New-Item -ItemType File -Path (Join-Path $testRoot "project_a\.zemiworkroot"))
     & $commandScript -InstancePath $testRoot
@@ -44,14 +50,39 @@ try {
     if (@($workspace.folders.path) -join ',' -cne 'component_b,project_a') {
         throw "The workspace does not contain all marked roots."
     }
-    if ($workspace.settings.'python.defaultInterpreterPath' -cne $latestVenvRoot + "\Scripts\python.exe") {
-        throw "The workspace default Python path is incorrect."
-    }
-    if ($workspace.settings.'python.terminal.activateEnvironment' -cne $true) {
-        throw "The workspace does not enable Python environment activation in terminals."
+    if ($workspace.settings.PSObject.Properties["python.defaultInterpreterPath"] -or
+        $workspace.settings.PSObject.Properties["python.terminal.activateEnvironment"]) {
+        throw "The workspace still contains legacy Python settings."
     }
     if ($workspace.settings.'terminal.integrated.cwd' -cne $testRoot) {
         throw "The workspace terminal directory is not the ZEMI Instance root."
+    }
+
+    foreach ($projectName in @("component_b", "project_a")) {
+        $settingsPath = Join-Path $testRoot "$projectName\.vscode\settings.json"
+        $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if (@($settings.'python-envs.pythonProjects').Count -ne 1 -or
+            $settings.'python-envs.pythonProjects'[0].path -cne "." -or
+            $settings.'python-envs.pythonProjects'[0].envManager -cne "ms-python.python:venv" -or
+            $settings.'python-envs.pythonProjects'[0].packageManager -cne "ms-python.python:pip") {
+            throw "The project Python Environments definition is incorrect: $projectName"
+        }
+        if (@($settings.'python-envs.workspaceSearchPaths') -join ',' -cne
+            "../_venvs/default-WPy64-313100") {
+            throw "The project default venv search path is incorrect: $projectName"
+        }
+        if ($settings.PSObject.Properties["python.defaultInterpreterPath"] -or
+            $settings.PSObject.Properties["python.terminal.activateEnvironment"]) {
+            throw "The project still contains legacy Python settings: $projectName"
+        }
+    }
+    $componentSettings = Get-Content `
+        -LiteralPath (Join-Path $testRoot "component_b\.vscode\settings.json") `
+        -Raw `
+        -Encoding UTF8 |
+        ConvertFrom-Json
+    if ($componentSettings.'editor.formatOnSave' -ne $true) {
+        throw "Project setup did not preserve unrelated VS Code settings."
     }
 
     $invalidNameFailed = $false

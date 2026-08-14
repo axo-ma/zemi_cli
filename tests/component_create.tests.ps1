@@ -15,6 +15,12 @@ $testRoot = Join-Path $temporaryRoot ("zemi-cli-component-create-" + [guid]::New
 try {
     [void](New-Item -ItemType Directory -Path $testRoot)
     [void](New-Item -ItemType File -Path (Join-Path $testRoot ".zemiinst_exp"))
+    foreach ($version in @("312101", "313100")) {
+        $venvRoot = Join-Path $testRoot "_venvs\default-WPy64-$version"
+        [void](New-Item -ItemType Directory -Path (Join-Path $venvRoot "Scripts"))
+        [void](New-Item -ItemType File -Path (Join-Path $venvRoot "Scripts\python.exe"))
+        [void](New-Item -ItemType File -Path (Join-Path $venvRoot "pyvenv.cfg"))
+    }
 
     & $commandScript -InstancePath $testRoot -ComponentName "missing-env" -NoRepository -Yes -WhatIf
     if (Test-Path -LiteralPath (Join-Path $testRoot "missing-env")) {
@@ -31,17 +37,18 @@ try {
     if ($parseErrors.Count -gt 0) {
         throw "component_create.ps1 contains PowerShell syntax errors."
     }
-    $commandScriptContent = Get-Content -LiteralPath $commandScript -Raw -Encoding UTF8
-    if ($commandScriptContent -match 'defaultInterpreterPath|Find-LatestDefaultPythonVenv|\.vscode') {
-        throw "Component creation still contains Python environment or VS Code settings logic."
+    foreach ($functionName in @(
+        "Add-ComponentToVSCodeWorkspace",
+        "Find-LatestDefaultPythonVenv",
+        "Set-ProjectVSCodePythonEnvironment"
+    )) {
+        $definition = $syntaxTree.Find(
+            { param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -eq $functionName },
+            $true
+        )
+        Invoke-Expression $definition.Extent.Text
     }
-
-    $workspaceDefinition = $syntaxTree.Find(
-        { param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
-            $node.Name -eq "Add-ComponentToVSCodeWorkspace" },
-        $true
-    )
-    Invoke-Expression $workspaceDefinition.Extent.Text
     $workspacePath = Join-Path $testRoot ((Split-Path -Leaf $testRoot) + ".code-workspace")
     [IO.File]::WriteAllText(
         $workspacePath,
@@ -61,9 +68,46 @@ try {
         throw "Component creation did not preserve existing workspace settings."
     }
 
-    & $commandScript -InstancePath $testRoot -ComponentName "new-component" -NoRepository -Yes -WhatIf
-    if (Test-Path -LiteralPath (Join-Path $testRoot "new-component")) {
-        throw "WhatIf unexpectedly created the component."
+    $defaultVenv = Find-LatestDefaultPythonVenv -InstanceRoot $testRoot
+    if ($defaultVenv.Name -cne "default-WPy64-313100") {
+        throw "Component creation did not select the newest default Python venv."
+    }
+    $projectRoot = Join-Path $testRoot "new-component"
+    [void](New-Item -ItemType Directory -Path (Join-Path $projectRoot ".vscode"))
+    [IO.File]::WriteAllText(
+        (Join-Path $projectRoot ".vscode\settings.json"),
+        '{"editor.formatOnSave":true,"python.defaultInterpreterPath":"old","python.terminal.activateEnvironment":true}',
+        (New-Object Text.UTF8Encoding($false))
+    )
+    $settingsPath = Set-ProjectVSCodePythonEnvironment `
+        -ProjectRoot $projectRoot `
+        -VenvRoot $defaultVenv.Root
+    $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($settings.'editor.formatOnSave' -ne $true) {
+        throw "Component creation did not preserve unrelated project settings."
+    }
+    if (@($settings.'python-envs.pythonProjects').Count -ne 1 -or
+        $settings.'python-envs.pythonProjects'[0].path -cne ".") {
+        throw "Component creation did not configure the Python project."
+    }
+    if (@($settings.'python-envs.workspaceSearchPaths') -join ',' -cne
+        "../_venvs/default-WPy64-313100") {
+        throw "Component creation did not configure the exact default venv search path."
+    }
+    if ($settings.PSObject.Properties["python.defaultInterpreterPath"] -or
+        $settings.PSObject.Properties["python.terminal.activateEnvironment"]) {
+        throw "Component creation left legacy Python settings in the project."
+    }
+
+    $existingTargetFailed = $false
+    try {
+        & $commandScript -InstancePath $testRoot -ComponentName "new-component" -NoRepository -Yes -WhatIf
+    }
+    catch {
+        $existingTargetFailed = $_.Exception.Message -match 'target already exists'
+    }
+    if (-not $existingTargetFailed) {
+        throw "Component creation did not reject an existing target."
     }
 
     Write-Host "[OK] component create tests passed." -ForegroundColor Green

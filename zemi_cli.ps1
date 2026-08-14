@@ -65,6 +65,10 @@ switch ($commandPath.Trim()) {
             -Prefix "zemi instance setup" `
             -Suffix "-vscode-workspace" `
             -Description "Create the default Python venv and configure the Instance workspace."
+        Write-ColoredCommand `
+            -Prefix "zemi instance fix-vscode-" `
+            -Highlight "venv-activation" `
+            -Description "Fix reliable Python venv activation in new VS Code terminals."
         Write-Host ""
         Write-ColoredCommand `
             -Prefix "zemi component create" `
@@ -106,6 +110,7 @@ switch ($commandPath.Trim()) {
     }
     "instance create" { $scriptName = "instance_create.ps1" }
     "instance deploy-winpython" { $scriptName = "instance_deploy_winpython.ps1" }
+    "instance fix-vscode-venv-activation" { $scriptName = "instance_fix_vscode_venv_activation.ps1" }
     "instance setup-vscode-workspace" { $scriptName = "instance_setup_vscode_workspace.ps1" }
     "vscode reset-python-settings" { $scriptName = "vscode_reset_python_settings.ps1" }
     default {

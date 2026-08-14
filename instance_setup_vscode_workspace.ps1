@@ -33,6 +33,77 @@ function Find-ZemiInstanceRoot {
     }
 }
 
+function Set-ProjectVSCodePythonEnvironment {
+    param(
+        [string]$ProjectRoot,
+        [string]$VenvRoot
+    )
+
+    $settingsRoot = Join-Path $ProjectRoot ".vscode"
+    $settingsPath = Join-Path $settingsRoot "settings.json"
+    if (Test-Path -LiteralPath $settingsPath -PathType Leaf) {
+        try {
+            $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 |
+                ConvertFrom-Json
+        }
+        catch {
+            throw "The project VS Code settings file is not valid JSON: $settingsPath"
+        }
+        if ($settings -isnot [PSCustomObject]) {
+            throw "The project VS Code settings file must contain a JSON object: $settingsPath"
+        }
+    }
+    else {
+        $settings = [PSCustomObject]@{}
+    }
+
+    foreach ($legacyName in @(
+        "python.defaultInterpreterPath",
+        "python.terminal.activateEnvironment"
+    )) {
+        $legacyProperty = $settings.PSObject.Properties[$legacyName]
+        if ($legacyProperty) {
+            $settings.PSObject.Properties.Remove($legacyName)
+        }
+    }
+
+    $projectUri = New-Object Uri(
+        ([IO.Path]::GetFullPath($ProjectRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
+    )
+    $venvUri = New-Object Uri(
+        ([IO.Path]::GetFullPath($VenvRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
+    )
+    $relativeVenvRoot = [Uri]::UnescapeDataString(
+        $projectUri.MakeRelativeUri($venvUri).ToString()
+    ).TrimEnd('/')
+
+    $settings | Add-Member `
+        -MemberType NoteProperty `
+        -Name "python-envs.pythonProjects" `
+        -Value @(
+            [PSCustomObject][ordered]@{
+                path = "."
+                envManager = "ms-python.python:venv"
+                packageManager = "ms-python.python:pip"
+            }
+        ) `
+        -Force
+    $settings | Add-Member `
+        -MemberType NoteProperty `
+        -Name "python-envs.workspaceSearchPaths" `
+        -Value @($relativeVenvRoot) `
+        -Force
+
+    [void](New-Item -ItemType Directory -Path $settingsRoot -Force)
+    $settingsContent = ($settings | ConvertTo-Json -Depth 20) + [Environment]::NewLine
+    [IO.File]::WriteAllText(
+        $settingsPath,
+        $settingsContent,
+        (New-Object Text.UTF8Encoding($false))
+    )
+    return $settingsPath
+}
+
 if ([string]::IsNullOrWhiteSpace($InstancePath)) {
     $instanceRoot = Find-ZemiInstanceRoot -StartPath (Get-Location).ProviderPath
     if (-not $instanceRoot) {
@@ -201,21 +272,32 @@ else {
     }
 }
 
-$workspace.settings | Add-Member `
-    -MemberType NoteProperty `
-    -Name "python.defaultInterpreterPath" `
-    -Value $venvExecutable `
-    -Force
-$workspace.settings | Add-Member `
-    -MemberType NoteProperty `
-    -Name "python.terminal.activateEnvironment" `
-    -Value $true `
-    -Force
+foreach ($legacyName in @(
+    "python.defaultInterpreterPath",
+    "python.terminal.activateEnvironment"
+)) {
+    $legacyProperty = $workspace.settings.PSObject.Properties[$legacyName]
+    if ($legacyProperty) {
+        $workspace.settings.PSObject.Properties.Remove($legacyName)
+    }
+}
 $workspace.settings | Add-Member `
     -MemberType NoteProperty `
     -Name "terminal.integrated.cwd" `
     -Value $instanceRoot `
     -Force
+
+foreach ($workspaceRoot in $workspaceRoots) {
+    $projectSettingsPath = Join-Path $workspaceRoot.FullName ".vscode\settings.json"
+    if ($PSCmdlet.ShouldProcess(
+        $projectSettingsPath,
+        "Configure the project to use $venvName"
+    )) {
+        [void](Set-ProjectVSCodePythonEnvironment `
+            -ProjectRoot $workspaceRoot.FullName `
+            -VenvRoot $venvRoot)
+    }
+}
 
 $workspaceContent = ($workspace | ConvertTo-Json -Depth 20) + [Environment]::NewLine
 if (-not $PSCmdlet.ShouldProcess($workspacePath, "Create or update the VS Code workspace")) {
