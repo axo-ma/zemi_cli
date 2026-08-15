@@ -20,6 +20,10 @@ if ($codePaths.Count -gt 1) {
 }
 
 $codeRoot = Split-Path -Parent $codePaths[0]
+$codeCommand = Join-Path $codeRoot "bin\code.cmd"
+if (-not (Test-Path -LiteralPath $codeCommand -PathType Leaf)) {
+    throw "VS Code CLI was not found: $codeCommand"
+}
 $portableUserRoot = Join-Path $codeRoot "data\user-data\User"
 if (Test-Path -LiteralPath $portableUserRoot -PathType Container) {
     $userRoot = $portableUserRoot
@@ -46,16 +50,31 @@ else {
     $settings = [PSCustomObject]@{}
 }
 
-$terminalEnvironment = $settings.'terminal.integrated.env.windows'
+if ($settings -isnot [PSCustomObject]) {
+    throw "VS Code settings must contain a JSON object: $settingsPath"
+}
+
+$terminalEnvironmentProperty = $settings.PSObject.Properties["terminal.integrated.env.windows"]
+$terminalEnvironment = if ($terminalEnvironmentProperty) {
+    $terminalEnvironmentProperty.Value
+}
+else {
+    $null
+}
 if (-not $terminalEnvironment) {
     $terminalEnvironment = [PSCustomObject]@{}
 }
+elseif ($terminalEnvironment -isnot [PSCustomObject]) {
+    throw "terminal.integrated.env.windows must contain a JSON object: $settingsPath"
+}
 
-$currentPath = [string]$terminalEnvironment.PATH
+$pathProperty = $terminalEnvironment.PSObject.Properties["PATH"]
+$currentPath = if ($pathProperty) { [string]$pathProperty.Value } else { "" }
 $cliAlreadyPresent = @(
     $currentPath -split ';' |
         Where-Object { $_.Trim().TrimEnd('\') -ieq $cliRoot.TrimEnd('\') }
 ).Count -gt 0
+$settingsChanged = $false
 
 if (-not $cliAlreadyPresent) {
     if ([string]::IsNullOrWhiteSpace($currentPath)) {
@@ -67,6 +86,10 @@ if (-not $cliAlreadyPresent) {
     $settings |
         Add-Member -MemberType NoteProperty -Name "terminal.integrated.env.windows" -Value $terminalEnvironment -Force
 
+    $settingsChanged = $true
+}
+
+if ($settingsChanged) {
     $json = $settings | ConvertTo-Json -Depth 20
     [IO.File]::WriteAllText(
         $settingsPath,
@@ -75,7 +98,7 @@ if (-not $cliAlreadyPresent) {
     )
 }
 
-& $codePaths[0] --install-extension $extensionPath --force
+& $codeCommand --install-extension $extensionPath --force
 if ($LASTEXITCODE -ne 0) {
     throw "VS Code failed to install the ZEMI Python Environment extension."
 }
@@ -85,3 +108,9 @@ Write-Host "CLI:      $cliRoot"
 Write-Host "Extension: $extensionPath"
 Write-Host "Settings: $settingsPath"
 Write-Host "Windows PATH was not changed."
+Write-Host ""
+Write-Host "To make the 'zemi' command available:" -ForegroundColor Cyan
+Write-Host "  1. Run 'Developer: Reload Window' in VS Code."
+Write-Host "  2. Close all existing integrated terminals."
+Write-Host "  3. Create a new terminal and run: zemi hello"
+Write-Host "Existing terminals keep the PATH with which they were started."

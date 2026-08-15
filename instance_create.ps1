@@ -132,6 +132,19 @@ foreach ($directoryName in $requiredDirectories) {
 }
 [void](New-Item -ItemType File -Path (Join-Path $instanceRoot $markerName))
 
+$workspaceFileName = (Split-Path -Leaf $instanceRoot) + ".code-workspace"
+$workspacePath = Join-Path $instanceRoot $workspaceFileName
+$workspace = [PSCustomObject][ordered]@{
+    folders = @()
+    settings = [PSCustomObject]@{}
+}
+$workspaceContent = ($workspace | ConvertTo-Json -Depth 20) + [Environment]::NewLine
+[IO.File]::WriteAllText(
+    $workspacePath,
+    $workspaceContent,
+    (New-Object Text.UTF8Encoding($false))
+)
+
 $instanceMarkers = @(
     Get-ChildItem -LiteralPath $instanceRoot -Force -File |
         Where-Object { $_.Name -in @(".zemiinst_dev", ".zemiinst_exp", ".zemiinst_prod") }
@@ -145,5 +158,6 @@ Write-Host ""
 Write-Host "[OK] Experimental ZEMI Instance created." -ForegroundColor Green
 Write-Host "Root: $instanceRoot"
 Write-Host "Marker: $markerName"
+Write-Host "Workspace: $workspacePath"
 Write-Host ""
 Write-Host "Next: zemi instance deploy-winpython"

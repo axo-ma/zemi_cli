@@ -87,6 +87,10 @@ To create a ZEMI Instance directory, run:
 zemi instance create
 ```
 
+Команда создаёт пустой `<InstanceName>.code-workspace` с массивом `folders`
+и объектом `settings`. При создании компонентов workspace будет дополняться
+новыми корнями.
+
 The command creates the selected ZEMI Instance directory and places the
 `.zemiinst_exp` marker file directly in its root.
 
@@ -122,6 +126,13 @@ To create a ZEMI Component from the template while inside a ZEMI Instance, run:
 ```powershell
 zemi component create my_component
 ```
+
+> **Important:** When `zemi component create` changes
+> `python.defaultInterpreterPath`, VS Code may temporarily display the
+> **An Invalid Python interpreter is selected** notification. Ignore it or close
+> it with the **X** button; do not click **Select Python Interpreter**. Wait for
+> the command to finish—ZEMI will apply the default Python environment from the
+> current Instance automatically.
 
 The command creates the component directory with a `.zemicomp` marker, adds it
 to the current ZEMI Instance workspace, and configures its
