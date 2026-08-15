@@ -72,8 +72,8 @@ switch ($commandPath.Trim()) {
         Write-Host ""
         Write-ColoredCommand `
             -Prefix "zemi vscode " `
-            -Highlight "install-cli" `
-            -Description "Add the ZEMI CLI to the VS Code integrated terminal PATH."
+            -Highlight "install-zemi" `
+            -Description "Install the ZEMI CLI and Python environment extension in VS Code."
         Write-ColoredCommand `
             -Prefix "zemi vscode fix-" `
             -Highlight "venv-activation" `
@@ -99,7 +99,7 @@ switch ($commandPath.Trim()) {
         Write-Host ""
         return
     }
-    "vscode install-cli" { $scriptName = "vscode_install_cli.ps1" }
+    "vscode install-zemi" { $scriptName = "vscode_install_zemi.ps1" }
     "component create" { $scriptName = "component_create.ps1" }
     "debug component set-default-python-venv" {
         $scriptName = "debug_component_set_default_python_venv.ps1"

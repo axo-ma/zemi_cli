@@ -54,8 +54,8 @@ try {
         $workspace.settings.PSObject.Properties["python.terminal.activateEnvironment"]) {
         throw "The workspace still contains legacy Python settings."
     }
-    if ($workspace.settings.'terminal.integrated.cwd' -cne $testRoot) {
-        throw "The workspace terminal directory is not the ZEMI Instance root."
+    if ($workspace.settings.PSObject.Properties["terminal.integrated.cwd"]) {
+        throw "The workspace unexpectedly configures the terminal directory."
     }
 
     foreach ($projectName in @("component_b", "project_a")) {

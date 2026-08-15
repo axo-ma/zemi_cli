@@ -273,12 +273,6 @@ foreach ($legacyName in @(
         $workspace.settings.PSObject.Properties.Remove($legacyName)
     }
 }
-$workspace.settings | Add-Member `
-    -MemberType NoteProperty `
-    -Name "terminal.integrated.cwd" `
-    -Value $instanceRoot `
-    -Force
-
 foreach ($workspaceRoot in $workspaceRoots) {
     $projectSettingsPath = Join-Path $workspaceRoot.FullName ".vscode\settings.json"
     if ($PSCmdlet.ShouldProcess(

@@ -15,7 +15,7 @@ compatibility with them.
 - Required commands:
   - `zemi hello`;
   - `zemi help`;
-  - `zemi vscode install-cli`;
+  - `zemi vscode install-zemi`;
   - `zemi component create`;
   - `zemi instance create`;
   - `zemi instance deploy-winpython`;
@@ -30,7 +30,7 @@ compatibility with them.
   - `instance_create.ps1`;
   - `instance_deploy_winpython.ps1`;
   - `vscode_reset_python_settings.ps1`;
-  - `vscode_install_cli.ps1`.
+  - `vscode_install_zemi.ps1`.
 - When renaming a file, update the dispatcher, documentation, and textual
   references at the same time.
 
@@ -53,8 +53,9 @@ compatibility with them.
 - Only `zemi vscode fix-venv-activation` may set the current user's
   PowerShell execution policy to `RemoteSigned`; no CLI command may modify
   machine-wide execution policy.
-- `zemi vscode install-cli` configures only VS Code by adding the CLI directory
-  to `terminal.integrated.env.windows.PATH` in the user `settings.json`.
+- `zemi vscode install-zemi` configures VS Code by adding the CLI directory to
+  `terminal.integrated.env.windows.PATH` in the user `settings.json` and installs
+  the bundled ZEMI Python Environment extension.
 - Detect a running `Code.exe`. If VS Code is not running, display a red error.
 - `zemi component create` must not create a Python virtual environment. It must
   configure the component for the newest valid `default-WPy64-*` environment

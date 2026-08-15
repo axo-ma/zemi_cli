@@ -33,6 +33,10 @@ if (-not (Test-Path -LiteralPath $userRoot -PathType Container)) {
 
 $cliRoot = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
 $settingsPath = Join-Path $userRoot "settings.json"
+$extensionPath = Join-Path $cliRoot "vscode-zemi-python-env\dist\zemi-python-environment-0.1.1.vsix"
+if (-not (Test-Path -LiteralPath $extensionPath -PathType Leaf)) {
+    throw "ZEMI VS Code extension was not found: $extensionPath"
+}
 
 if (Test-Path -LiteralPath $settingsPath -PathType Leaf) {
     $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 |
@@ -71,7 +75,13 @@ if (-not $cliAlreadyPresent) {
     )
 }
 
-Write-Host "[OK] ZEMI CLI is available in new VS Code terminals." -ForegroundColor Green
+& $codePaths[0] --install-extension $extensionPath --force
+if ($LASTEXITCODE -ne 0) {
+    throw "VS Code failed to install the ZEMI Python Environment extension."
+}
+
+Write-Host "[OK] ZEMI is installed in VS Code." -ForegroundColor Green
 Write-Host "CLI:      $cliRoot"
+Write-Host "Extension: $extensionPath"
 Write-Host "Settings: $settingsPath"
 Write-Host "Windows PATH was not changed."

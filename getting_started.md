@@ -31,11 +31,13 @@ Start VS Code. Only one VS Code installation should be running. Then run this
 command from the ZEMI CLI directory:
 
 ```powershell
-.\zemi.cmd vscode install-cli
+.\zemi.cmd vscode install-zemi
 ```
 
 The command adds the ZEMI CLI directory only to
-`terminal.integrated.env.windows.PATH` in the VS Code user settings.
+`terminal.integrated.env.windows.PATH` in the VS Code user settings and installs
+the bundled ZEMI Python Environment extension. The extension automatically
+selects the configured Python environment when a ZEMI Component opens.
 
 Immediately configure reliable Python venv activation for VS Code:
 
