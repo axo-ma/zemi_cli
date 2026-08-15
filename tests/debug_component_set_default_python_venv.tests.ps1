@@ -32,20 +32,23 @@ try {
     [void](New-Item -ItemType Directory -Path $vscodeRoot)
     Set-Content -LiteralPath (Join-Path $vscodeRoot "settings.json") `
         -Encoding UTF8 `
-        -Value '{"editor.formatOnSave":true}'
+        -Value '{"editor.formatOnSave":true,"python-envs.pythonProjects":[{"path":"."}],"python-envs.workspaceSearchPaths":["old"]}'
 
     Set-Location -LiteralPath $nestedRoot
     & $commandScript
 
     $settings = Get-Content -LiteralPath (Join-Path $vscodeRoot "settings.json") -Raw |
         ConvertFrom-Json
-    $expectedSearchPath = '../_venvs/default-WPy64-313100'
-    if (@($settings.'python-envs.workspaceSearchPaths') -join ',' -cne $expectedSearchPath) {
+    $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
+    if ($settings.'python.defaultInterpreterPath' -cne $expectedPython) {
         throw "The newest default Python venv was not assigned to the component."
     }
-    if (@($settings.'python-envs.pythonProjects').Count -ne 1 -or
-        $settings.'python-envs.pythonProjects'[0].path -cne '.') {
-        throw "The component was not registered as a Python project."
+    if ($settings.'python.terminal.activateEnvironment' -cne $true) {
+        throw "Python environment activation was not enabled for the component."
+    }
+    if ($settings.PSObject.Properties["python-envs.pythonProjects"] -or
+        $settings.PSObject.Properties["python-envs.workspaceSearchPaths"]) {
+        throw "Python Environments project settings were not removed from the component."
     }
     if ($settings.'editor.formatOnSave' -ne $true) {
         throw "An existing VS Code setting was not preserved."
@@ -64,17 +67,23 @@ try {
         throw "VS Code settings were not created for a .zemiworkroot project."
     }
     $workRootSettings = Get-Content -LiteralPath $workRootSettingsPath -Raw | ConvertFrom-Json
-    if (@($workRootSettings.'python-envs.workspaceSearchPaths') -join ',' -cne $expectedSearchPath) {
+    if ($workRootSettings.'python.defaultInterpreterPath' -cne $expectedPython) {
         throw "The default Python venv was not assigned to the .zemiworkroot project."
+    }
+    if ($workRootSettings.'python.terminal.activateEnvironment' -cne $true) {
+        throw "Python environment activation was not enabled for the .zemiworkroot project."
     }
 
     & $commandScript -AbsolutePath
     $absoluteSettings = Get-Content -LiteralPath $workRootSettingsPath -Raw | ConvertFrom-Json
-    $expectedAbsoluteVenv = [IO.Path]::GetFullPath(
-        (Join-Path $testRoot "_venvs\default-WPy64-313100")
+    $expectedAbsolutePython = [IO.Path]::GetFullPath(
+        (Join-Path $testRoot "_venvs\default-WPy64-313100\Scripts\python.exe")
     )
-    if (@($absoluteSettings.'python-envs.workspaceSearchPaths') -join ',' -cne $expectedAbsoluteVenv) {
-        throw "The absolute-path debug mode did not write the absolute venv path."
+    if ($absoluteSettings.'python.defaultInterpreterPath' -cne $expectedAbsolutePython) {
+        throw "The absolute-path debug mode did not write the absolute Python path."
+    }
+    if ($absoluteSettings.'python.terminal.activateEnvironment' -cne $true) {
+        throw "The absolute-path debug mode did not enable Python environment activation."
     }
 
     Write-Host "[OK] debug component set-default-python-venv tests passed." -ForegroundColor Green

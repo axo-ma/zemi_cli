@@ -76,7 +76,7 @@ try {
     [void](New-Item -ItemType Directory -Path (Join-Path $projectRoot ".vscode"))
     [IO.File]::WriteAllText(
         (Join-Path $projectRoot ".vscode\settings.json"),
-        '{"editor.formatOnSave":true,"python.defaultInterpreterPath":"old","python.terminal.activateEnvironment":true}',
+        '{"editor.formatOnSave":true,"python-envs.pythonProjects":[{"path":"."}],"python-envs.workspaceSearchPaths":["old"]}',
         (New-Object Text.UTF8Encoding($false))
     )
     $settingsPath = Set-ProjectVSCodePythonEnvironment `
@@ -86,17 +86,16 @@ try {
     if ($settings.'editor.formatOnSave' -ne $true) {
         throw "Component creation did not preserve unrelated project settings."
     }
-    if (@($settings.'python-envs.pythonProjects').Count -ne 1 -or
-        $settings.'python-envs.pythonProjects'[0].path -cne ".") {
-        throw "Component creation did not configure the Python project."
+    $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
+    if ($settings.'python.defaultInterpreterPath' -cne $expectedPython) {
+        throw "Component creation did not configure the exact default Python interpreter."
     }
-    if (@($settings.'python-envs.workspaceSearchPaths') -join ',' -cne
-        "../_venvs/default-WPy64-313100") {
-        throw "Component creation did not configure the exact default venv search path."
+    if ($settings.'python.terminal.activateEnvironment' -cne $true) {
+        throw "Component creation did not enable Python environment activation."
     }
-    if ($settings.PSObject.Properties["python.defaultInterpreterPath"] -or
-        $settings.PSObject.Properties["python.terminal.activateEnvironment"]) {
-        throw "Component creation left legacy Python settings in the project."
+    if ($settings.PSObject.Properties["python-envs.pythonProjects"] -or
+        $settings.PSObject.Properties["python-envs.workspaceSearchPaths"]) {
+        throw "Component creation left Python Environments project settings in the project."
     }
 
     $existingTargetFailed = $false

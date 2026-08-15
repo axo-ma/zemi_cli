@@ -139,41 +139,33 @@ function Set-ProjectVSCodePythonEnvironment {
         $settings = [PSCustomObject]@{}
     }
 
-    foreach ($legacyName in @(
-        "python.defaultInterpreterPath",
-        "python.terminal.activateEnvironment"
+    foreach ($pythonEnvsName in @(
+        "python-envs.pythonProjects",
+        "python-envs.workspaceSearchPaths"
     )) {
-        $legacyProperty = $settings.PSObject.Properties[$legacyName]
-        if ($legacyProperty) {
-            $settings.PSObject.Properties.Remove($legacyName)
+        $pythonEnvsProperty = $settings.PSObject.Properties[$pythonEnvsName]
+        if ($pythonEnvsProperty) {
+            $settings.PSObject.Properties.Remove($pythonEnvsName)
         }
     }
 
     $projectUri = New-Object Uri(
         ([IO.Path]::GetFullPath($ProjectRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
     )
-    $venvUri = New-Object Uri(
-        ([IO.Path]::GetFullPath($VenvRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
+    $pythonPath = Join-Path $VenvRoot "Scripts\python.exe"
+    $relativePythonPath = [Uri]::UnescapeDataString(
+        $projectUri.MakeRelativeUri((New-Object Uri([IO.Path]::GetFullPath($pythonPath)))).ToString()
     )
-    $relativeVenvRoot = [Uri]::UnescapeDataString(
-        $projectUri.MakeRelativeUri($venvUri).ToString()
-    ).TrimEnd('/')
 
     $settings | Add-Member `
         -MemberType NoteProperty `
-        -Name "python-envs.pythonProjects" `
-        -Value @(
-            [PSCustomObject][ordered]@{
-                path = "."
-                envManager = "ms-python.python:venv"
-                packageManager = "ms-python.python:pip"
-            }
-        ) `
+        -Name "python.defaultInterpreterPath" `
+        -Value ('${workspaceFolder}/' + $relativePythonPath) `
         -Force
     $settings | Add-Member `
         -MemberType NoteProperty `
-        -Name "python-envs.workspaceSearchPaths" `
-        -Value @($relativeVenvRoot) `
+        -Name "python.terminal.activateEnvironment" `
+        -Value $true `
         -Force
 
     [void](New-Item -ItemType Directory -Path $settingsRoot -Force)

@@ -35,7 +35,7 @@ try {
     [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b\.vscode"))
     [IO.File]::WriteAllText(
         (Join-Path $testRoot "component_b\.vscode\settings.json"),
-        '{"editor.formatOnSave":true,"python.defaultInterpreterPath":"old","python.terminal.activateEnvironment":true}',
+        '{"editor.formatOnSave":true,"python-envs.pythonProjects":[{"path":"."}],"python-envs.workspaceSearchPaths":["old"]}',
         (New-Object Text.UTF8Encoding($false))
     )
     [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "project_a"))
@@ -61,19 +61,16 @@ try {
     foreach ($projectName in @("component_b", "project_a")) {
         $settingsPath = Join-Path $testRoot "$projectName\.vscode\settings.json"
         $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
-        if (@($settings.'python-envs.pythonProjects').Count -ne 1 -or
-            $settings.'python-envs.pythonProjects'[0].path -cne "." -or
-            $settings.'python-envs.pythonProjects'[0].envManager -cne "ms-python.python:venv" -or
-            $settings.'python-envs.pythonProjects'[0].packageManager -cne "ms-python.python:pip") {
-            throw "The project Python Environments definition is incorrect: $projectName"
+        $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
+        if ($settings.'python.defaultInterpreterPath' -cne $expectedPython) {
+            throw "The project default Python interpreter is incorrect: $projectName"
         }
-        if (@($settings.'python-envs.workspaceSearchPaths') -join ',' -cne
-            "../_venvs/default-WPy64-313100") {
-            throw "The project default venv search path is incorrect: $projectName"
+        if ($settings.'python.terminal.activateEnvironment' -cne $true) {
+            throw "The project does not enable Python environment activation: $projectName"
         }
-        if ($settings.PSObject.Properties["python.defaultInterpreterPath"] -or
-            $settings.PSObject.Properties["python.terminal.activateEnvironment"]) {
-            throw "The project still contains legacy Python settings: $projectName"
+        if ($settings.PSObject.Properties["python-envs.pythonProjects"] -or
+            $settings.PSObject.Properties["python-envs.workspaceSearchPaths"]) {
+            throw "The project still contains Python Environments project settings: $projectName"
         }
     }
     $componentSettings = Get-Content `

@@ -46,8 +46,8 @@ Immediately configure reliable Python venv activation for VS Code:
 The command enables the Python Environments `shellStartup` mode, installs the
 current PowerShell startup block, enables terminal shell integration, and sets
 the current user's PowerShell execution policy to `RemoteSigned`. It also
-removes legacy user-level `python.defaultInterpreterPath` and
-`python.terminal.activateEnvironment` settings.
+removes user-level `python.defaultInterpreterPath` and
+`python.terminal.activateEnvironment` so project settings remain authoritative.
 
 Close all existing integrated terminals and run **Developer: Reload Window**.
 Then open a new terminal.
@@ -107,7 +107,8 @@ zemi instance setup-vscode-workspace
 
 The command creates the default Python virtual environment in `@inst/_venvs`,
 creates `@inst/<instance-name>.code-workspace`, and configures every existing
-marked workspace root using the current Python Environments settings.
+marked workspace root with its default Python interpreter and terminal
+activation settings.
 
 When it finishes, close VS Code, open `@inst/<instance-name>.code-workspace`,
 and confirm trust when VS Code displays the Workspace Trust prompt.
@@ -132,8 +133,8 @@ After creation, return to VS Code and click **Yes** if it asks whether you trust
 the added component.
 
 After creating the first component in a ZEMI Instance, run **Developer: Reload
-Window** so Python Environments immediately discovers the newly added workspace
-root and its configured default venv.
+Window** so VS Code immediately applies the newly added workspace root and its
+configured default venv.
 
 Review the new component, then create the first commit with VS Code or the
 commands below. If `origin` is configured, push the commit to the remote

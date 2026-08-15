@@ -58,10 +58,11 @@ compatibility with them.
 - Detect a running `Code.exe`. If VS Code is not running, display a red error.
 - `zemi component create` must not create a Python virtual environment. It must
   configure the component for the newest valid `default-WPy64-*` environment
-  using `python-envs.pythonProjects` and `python-envs.workspaceSearchPaths`.
-- Do not write `python.defaultInterpreterPath` or
-  `python.terminal.activateEnvironment`; remove these legacy keys when updating
-  settings controlled by ZEMI.
+  using `python.defaultInterpreterPath` and
+  `python.terminal.activateEnvironment` in the project settings.
+- Remove `python-envs.pythonProjects` and
+  `python-envs.workspaceSearchPaths` when updating project settings controlled
+  by ZEMI.
 - `zemi vscode reset-python-settings` accepts no parameters and clears only the
   Python/Jupyter settings of the running VS Code instance. Do not scan a ZEMI
   Instance, modify components, or require WinPython.

@@ -120,45 +120,37 @@ else {
     $settings = [PSCustomObject]@{}
 }
 
-$environmentSearchPath = if ($AbsolutePath) {
-    $defaultVenv.Root
+$interpreterPath = if ($AbsolutePath) {
+    $defaultVenv.PythonPath
 }
 else {
-    [Uri]::UnescapeDataString(
+    '${workspaceFolder}/' + [Uri]::UnescapeDataString(
         (New-Object Uri(
             ([IO.Path]::GetFullPath($projectRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar)
-        )).MakeRelativeUri((New-Object Uri(
-            $defaultVenv.Root.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
-        ))).ToString()
-    ).TrimEnd('/')
+        )).MakeRelativeUri((New-Object Uri($defaultVenv.PythonPath))).ToString()
+    )
 }
 
-foreach ($legacyName in @(
-    "python.defaultInterpreterPath",
-    "python.terminal.activateEnvironment"
+foreach ($pythonEnvsName in @(
+    "python-envs.pythonProjects",
+    "python-envs.workspaceSearchPaths"
 )) {
-    $legacyProperty = $settings.PSObject.Properties[$legacyName]
-    if ($legacyProperty) {
-        $settings.PSObject.Properties.Remove($legacyName)
+    $pythonEnvsProperty = $settings.PSObject.Properties[$pythonEnvsName]
+    if ($pythonEnvsProperty) {
+        $settings.PSObject.Properties.Remove($pythonEnvsName)
     }
 }
 $settings |
     Add-Member `
         -MemberType NoteProperty `
-        -Name "python-envs.pythonProjects" `
-        -Value @(
-            [PSCustomObject][ordered]@{
-                path = "."
-                envManager = "ms-python.python:venv"
-                packageManager = "ms-python.python:pip"
-            }
-        ) `
+        -Name "python.defaultInterpreterPath" `
+        -Value $interpreterPath `
         -Force
 $settings |
     Add-Member `
         -MemberType NoteProperty `
-        -Name "python-envs.workspaceSearchPaths" `
-        -Value @($environmentSearchPath) `
+        -Name "python.terminal.activateEnvironment" `
+        -Value $true `
         -Force
 
 if (-not $PSCmdlet.ShouldProcess($settingsPath, "Set the project default Python venv to $($defaultVenv.Name)")) {
