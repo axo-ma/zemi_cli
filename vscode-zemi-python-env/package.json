@@ -1,0 +1,33 @@
+{
+  "name": "zemi-python-environment",
+  "displayName": "ZEMI Python Environment",
+  "description": "Automatically selects python.defaultInterpreterPath for each VS Code project.",
+  "version": "0.1.1",
+  "publisher": "zemi",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:zemiPython.applyDefaultInterpreter"
+  ],
+  "extensionDependencies": [
+    "ms-python.vscode-python-envs"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "zemiPython.applyDefaultInterpreter",
+        "title": "ZEMI: Apply Project Default Python Interpreter"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --check extension.js"
+  }
+}
