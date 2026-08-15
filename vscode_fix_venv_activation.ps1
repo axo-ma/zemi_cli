@@ -32,6 +32,29 @@ function Resolve-VSCodeUserRoot {
     return $userRoot
 }
 
+function Set-ZemiPowerShellExecutionPolicy {
+    $targetPolicy = "RemoteSigned"
+    if ((Get-ExecutionPolicy -Scope CurrentUser) -eq $targetPolicy) {
+        return
+    }
+
+    try {
+        Set-ExecutionPolicy `
+            -Scope CurrentUser `
+            -ExecutionPolicy $targetPolicy `
+            -Force `
+            -ErrorAction Stop
+    }
+    catch {
+        $currentUserPolicy = Get-ExecutionPolicy -Scope CurrentUser
+        $effectivePolicy = Get-ExecutionPolicy
+        if ($currentUserPolicy -ne $targetPolicy -or
+            $effectivePolicy -notin @("RemoteSigned", "Unrestricted", "Bypass")) {
+            throw
+        }
+    }
+}
+
 function Update-VSCodePythonActivationSettings {
     param([string]$SettingsPath)
 
@@ -144,7 +167,7 @@ $settingsPath = Join-Path $userRoot "settings.json"
 $profilePath = $PROFILE.CurrentUserCurrentHost
 
 if ($PSCmdlet.ShouldProcess("CurrentUser", "Set PowerShell execution policy to RemoteSigned")) {
-    Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+    Set-ZemiPowerShellExecutionPolicy
 }
 if (-not $WhatIfPreference -and
     (Get-ExecutionPolicy) -notin @("RemoteSigned", "Unrestricted", "Bypass")) {

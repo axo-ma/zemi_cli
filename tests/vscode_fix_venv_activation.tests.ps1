@@ -26,6 +26,7 @@ try {
     }
 
     foreach ($functionName in @(
+        "Set-ZemiPowerShellExecutionPolicy",
         "Update-VSCodePythonActivationSettings",
         "Update-PowerShellPythonActivationProfile"
     )) {
@@ -35,6 +36,16 @@ try {
             $true
         )
         Invoke-Expression $definition.Extent.Text
+    }
+
+    $policyFunction = $syntaxTree.Find(
+        { param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+            $node.Name -eq "Set-ZemiPowerShellExecutionPolicy" },
+        $true
+    ).Extent.Text
+    if ($policyFunction -notmatch 'Get-ExecutionPolicy\s+-Scope\s+CurrentUser' -or
+        $policyFunction -notmatch '"RemoteSigned",\s*"Unrestricted",\s*"Bypass"') {
+        throw "The execution-policy helper does not handle an overriding allowed policy."
     }
 
     $settingsPath = Join-Path $testRoot "User\settings.json"
