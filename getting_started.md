@@ -137,9 +137,7 @@ Window** so VS Code immediately applies the newly added workspace root and its
 configured default venv.
 
 Review the new component, then create the first commit with VS Code or the
-commands below. If `origin` is configured, push the commit to the remote
-repository:
-
+commands below:
 ```powershell
 git add -A
 git commit -m "Initialize ZEMI component"
