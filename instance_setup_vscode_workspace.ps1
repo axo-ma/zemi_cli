@@ -189,6 +189,9 @@ if (Test-Path -LiteralPath $venvRoot) {
     if ($configurationText -notmatch '(?im)^include-system-site-packages\s*=\s*true\s*$') {
         throw "The existing default venv does not expose WinPython site-packages: $venvRoot"
     }
+    if ($configurationText -notmatch '(?im)^prompt\s*=\s*[''"]?default-WinPy[''"]?\s*$') {
+        throw "The existing default venv has an outdated prompt; rerun setup-vscode-workspace: $venvRoot"
+    }
 
     Write-Host "[OK] Default Python venv is already available:" -ForegroundColor Green
     Write-Host "  $venvRoot"
@@ -200,7 +203,7 @@ if (-not $venvAlreadyExists) {
         return
     }
 
-    & $winPythonExecutable -m venv --system-site-packages --without-pip $venvRoot
+    & $winPythonExecutable -m venv --system-site-packages --without-pip --prompt default-WinPy $venvRoot
     if ($LASTEXITCODE -ne 0) {
         throw "WinPython failed to create the default venv (exit code $LASTEXITCODE)."
     }
@@ -213,6 +216,9 @@ if (-not $venvAlreadyExists) {
     $configurationText = Get-Content -LiteralPath $venvConfiguration -Raw
     if ($configurationText -notmatch '(?im)^include-system-site-packages\s*=\s*true\s*$') {
         throw "The created venv does not expose WinPython site-packages: $venvRoot"
+    }
+    if ($configurationText -notmatch '(?im)^prompt\s*=\s*[''"]?default-WinPy[''"]?\s*$') {
+        throw "The created venv has an unexpected prompt: $venvRoot"
     }
 
     Write-Host ""
