@@ -30,20 +30,6 @@ try {
     [void](New-Item -ItemType File -Path (Join-Path $latestVenvRoot "Scripts\python.exe"))
     Set-Content -LiteralPath (Join-Path $latestVenvRoot "pyvenv.cfg") `
         -Value "include-system-site-packages = true`nprompt = default-WinPy"
-    Set-Content -LiteralPath (Join-Path $latestVenvRoot "pyvenv.cfg") `
-        -Value "include-system-site-packages = true`nprompt = outdated"
-    $wrongPromptFailed = $false
-    try {
-        & $commandScript -InstancePath $testRoot
-    }
-    catch {
-        $wrongPromptFailed = $_.Exception.Message -match 'outdated prompt'
-    }
-    if (-not $wrongPromptFailed) {
-        throw "An outdated default venv prompt was not rejected."
-    }
-    Set-Content -LiteralPath (Join-Path $latestVenvRoot "pyvenv.cfg") `
-        -Value "include-system-site-packages = true`nprompt = default-WinPy"
     [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b"))
     [void](New-Item -ItemType File -Path (Join-Path $testRoot "component_b\.zemicomp"))
     [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b\.vscode"))
