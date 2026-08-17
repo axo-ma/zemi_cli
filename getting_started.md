@@ -9,6 +9,16 @@ Before creating a ZEMI Instance, prepare the workstation:
 3. Standard VS Code extensions:
    - Microsoft Python (`ms-python.python`);
    - Microsoft Jupyter (`ms-toolsai.jupyter`).
+
+   Microsoft Python usually installs these extensions automatically:
+
+   - Pylance (`ms-python.vscode-pylance`);
+   - Python Debugger (`ms-python.debugpy`);
+   - Python Environments (`ms-python.vscode-python-envs`).
+
+   You do not need to install Pylance or Python Debugger separately. Python
+   Environments is also a direct dependency of the ZEMI Python Environment
+   extension.
 4. **7-Zip** — required to extract the WinPython archive.
 5. Internet access — required to download WinPython and clone repositories.
 6. Microsoft Office for working with Excel.
@@ -39,20 +49,9 @@ The command adds the ZEMI CLI directory only to
 the bundled ZEMI Python Environment extension. The extension automatically
 selects the configured Python environment when a ZEMI Component opens.
 
-Immediately configure reliable Python venv activation for VS Code:
-
-```powershell
-.\zemi.cmd vscode fix-venv-activation
-```
-
-The command enables the Python Environments `shellStartup` mode, installs the
-current PowerShell startup block, enables terminal shell integration, and sets
-the current user's PowerShell execution policy to `RemoteSigned`. It also
-removes user-level `python.defaultInterpreterPath` and
-`python.terminal.activateEnvironment` so project settings remain authoritative.
-
-Close all existing integrated terminals and run **Developer: Reload Window**.
-Then open a new terminal.
+Run **Developer: Reload Window** so VS Code loads the extension and applies the
+new terminal `PATH`. Then close all existing integrated terminals and open a new
+terminal.
 Verify the global command:
 
 ```powershell
@@ -144,15 +143,3 @@ During creation, you can specify the URL of an empty Git repository to add it as
 
 After creation, return to VS Code and click **Yes** if it asks whether you trust
 the added component.
-
-After creating the first component in a ZEMI Instance, run **Developer: Reload
-Window** so VS Code immediately applies the newly added workspace root and its
-configured default venv.
-
-Review the new component, then create the first commit with VS Code or the
-commands below:
-```powershell
-git add -A
-git commit -m "Initialize ZEMI component"
-git push -u origin main
-```
