@@ -143,3 +143,14 @@ During creation, you can specify the URL of an empty Git repository to add it as
 
 After creation, return to VS Code and click **Yes** if it asks whether you trust
 the added component.
+
+Then open a terminal in the root directory of the created component (or change
+to that directory) and run the mandatory initialization step:
+
+```powershell
+python 00_init.py
+```
+
+`00_init.py` creates or updates the component Python venv, installs the Z-bundle
+and C-bundle packages, performs any additional component preparation, and
+configures the Python interpreter used by VS Code.
