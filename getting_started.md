@@ -86,9 +86,9 @@ To create a ZEMI Instance directory, run:
 zemi instance create
 ```
 
-Команда создаёт пустой `<InstanceName>.code-workspace` с массивом `folders`
-и объектом `settings`. При создании компонентов workspace будет дополняться
-новыми корнями.
+The command creates an empty `<InstanceName>.code-workspace` with a `folders`
+array and a `settings` object. New component roots are added to the workspace
+as components are created.
 
 The command creates the selected ZEMI Instance directory and places the
 `.zemiinst_exp` marker file directly in its root.

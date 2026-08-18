@@ -1,12 +1,12 @@
-# Быстрая переустановка VS Code для ZEMI
+# Quick VS Code Reinstallation for ZEMI
 
-Инструкция предназначена для Windows 10/11. Папки проектов, Git-репозитории,
-WinPython и виртуальные окружения ZEMI удалять не нужно.
+These instructions apply to Windows 10/11. You do not need to remove project
+directories, Git repositories, WinPython, or ZEMI virtual environments.
 
-## 1. Полное удаление
+## 1. Complete removal
 
-Отключите Settings Sync, если он был включён, и закройте все окна VS Code.
-Откройте отдельное окно PowerShell и выполните:
+Disable Settings Sync if it is enabled, close every VS Code window, open a
+separate PowerShell window, and run:
 
 ```powershell
 Set-Location "C:\Users\Axoman\Documents\ZEMI\zemi_cli"
@@ -14,50 +14,51 @@ Set-Location "C:\Users\Axoman\Documents\ZEMI\zemi_cli"
 .\vscode_clean_uninstall.ps1
 ```
 
-Сначала просмотрите цели в режиме `-WhatIf`. При настоящем удалении введите
-`DELETE`. Других подтверждений скрипт не запрашивает.
+Review the targets with `-WhatIf` first. For the actual removal, enter
+`DELETE`. The script does not request any other confirmation.
 
-После завершения перезапустите Windows.
+Restart Windows after the command finishes.
 
-## 2. Получение официального установщика
+## 2. Obtain the official installer
 
-Предпочтительный вариант — скачать **User Installer x64, Stable** с официальной
-страницы:
+The preferred option is to download the **User Installer x64, Stable** from the
+official page:
 
 <https://code.visualstudio.com/Download>
 
-Прямая официальная ссылка на актуальный User Installer x64:
+Direct official link to the current User Installer x64:
 
 <https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user>
 
-Скрипт проверяет цифровую подпись установщика Microsoft перед запуском.
+The script verifies the installer's Microsoft digital signature before running
+it.
 
-Скачивать файл вручную необязательно: без параметра `-InstallerPath` скрипт
-использует `winget` и пакет `Microsoft.VisualStudioCode`.
+Manual download is optional. Without `-InstallerPath`, the script uses
+`winget` and the `Microsoft.VisualStudioCode` package.
 
-## 3. Быстрая установка
+## 3. Quick installation
 
-После перезапуска Windows откройте PowerShell и перейдите в `zemi_cli`:
+After restarting Windows, open PowerShell and navigate to `zemi_cli`:
 
 ```powershell
 Set-Location "C:\Users\Axoman\Documents\ZEMI\zemi_cli"
 ```
 
-Если установщик скачан вручную:
+If you downloaded the installer manually:
 
 ```powershell
 .\vscode_quick_install.ps1 -InstallerPath "$env:USERPROFILE\Downloads\VSCodeUserSetup-x64.exe"
 ```
 
-Замените имя файла фактическим именем скачанного установщика.
+Replace the file name with the actual downloaded installer name.
 
-Если установщик не скачивали:
+If you did not download the installer:
 
 ```powershell
 .\vscode_quick_install.ps1
 ```
 
-Скрипт устанавливает VS Code Stable и расширения:
+The script installs VS Code Stable and these extensions:
 
 - Microsoft Python (`ms-python.python`);
 - Pylance (`ms-python.vscode-pylance`);
@@ -65,14 +66,14 @@ Set-Location "C:\Users\Axoman\Documents\ZEMI\zemi_cli"
 - Python Environments (`ms-python.vscode-python-envs`);
 - Jupyter (`ms-toolsai.jupyter`).
 
-Скрипт не запускает и не настраивает VS Code, не изменяет пользовательский
-`settings.json`, не добавляет ZEMI CLI в `PATH` терминала и не устанавливает
-локальное расширение ZEMI Python Environment.
+The script does not start or configure VS Code, modify the user
+`settings.json`, add ZEMI CLI to the terminal `PATH`, or install the local
+ZEMI Python Environment extension.
 
-## 4. Проверка
+## 4. Verification
 
-Запустите VS Code вручную, затем:
+Start VS Code manually, then:
 
-1. Не включайте Settings Sync до окончания чистого теста.
-2. Проверьте установленные Marketplace-расширения в панели Extensions.
-3. Дальнейшую установку и проверку ZEMI выполняйте отдельно.
+1. Do not enable Settings Sync until the clean test is complete.
+2. Check the installed Marketplace extensions in the Extensions panel.
+3. Perform the remaining ZEMI installation and verification separately.
