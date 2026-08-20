@@ -154,3 +154,9 @@ python 00_init.py
 `00_init.py` creates or updates the component Python venv, installs the Z-bundle
 and C-bundle packages, performs any additional component preparation, and
 configures the Python interpreter used by VS Code.
+
+## Troubleshooting
+
+For recovery procedures and help with Component environments, interpreters,
+Jupyter kernels, ZEMI Instances, and VS Code, see the
+[ZEMI troubleshooting guide](troubleshooting.md).

@@ -75,11 +75,16 @@ function Set-ProjectVSCodePythonEnvironment {
         $projectUri.MakeRelativeUri((New-Object Uri([IO.Path]::GetFullPath($pythonPath)))).ToString()
     )
 
-    $settings | Add-Member `
-        -MemberType NoteProperty `
-        -Name "python.defaultInterpreterPath" `
-        -Value ('${workspaceFolder}/' + $relativePythonPath) `
-        -Force
+    $configuredInterpreter = $settings.PSObject.Properties["python.defaultInterpreterPath"]
+    if (-not $configuredInterpreter -or
+        $configuredInterpreter.Value -isnot [string] -or
+        [string]::IsNullOrWhiteSpace($configuredInterpreter.Value)) {
+        $settings | Add-Member `
+            -MemberType NoteProperty `
+            -Name "python.defaultInterpreterPath" `
+            -Value ('${workspaceFolder}/' + $relativePythonPath) `
+            -Force
+    }
     $settings | Add-Member `
         -MemberType NoteProperty `
         -Name "python.terminal.activateEnvironment" `

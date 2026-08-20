@@ -30,16 +30,24 @@ try {
     [void](New-Item -ItemType File -Path (Join-Path $latestVenvRoot "Scripts\python.exe"))
     Set-Content -LiteralPath (Join-Path $latestVenvRoot "pyvenv.cfg") `
         -Value "include-system-site-packages = true`nprompt = default-WinPy"
-    [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b"))
-    [void](New-Item -ItemType File -Path (Join-Path $testRoot "component_b\.zemicomp"))
-    [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "component_b\.vscode"))
-    [IO.File]::WriteAllText(
-        (Join-Path $testRoot "component_b\.vscode\settings.json"),
-        '{"editor.formatOnSave":true,"python-envs.pythonProjects":[{"path":"."}],"python-envs.workspaceSearchPaths":["old"]}',
-        (New-Object Text.UTF8Encoding($false))
-    )
-    [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "project_a"))
-    [void](New-Item -ItemType File -Path (Join-Path $testRoot "project_a\.zemiworkroot"))
+    $projectSettings = [ordered]@{
+        component_custom = '{"editor.formatOnSave":true,"python.defaultInterpreterPath":"C:/custom/python.exe","python-envs.pythonProjects":[{"path":"."}],"python-envs.workspaceSearchPaths":["old"]}'
+        component_empty = '{"python.defaultInterpreterPath":""}'
+        component_null = '{"python.defaultInterpreterPath":null}'
+        component_whitespace = '{"python.defaultInterpreterPath":"   "}'
+    }
+    foreach ($projectName in $projectSettings.Keys) {
+        [void](New-Item -ItemType Directory -Path (Join-Path $testRoot $projectName))
+        [void](New-Item -ItemType File -Path (Join-Path $testRoot "$projectName\.zemicomp"))
+        [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "$projectName\.vscode"))
+        [IO.File]::WriteAllText(
+            (Join-Path $testRoot "$projectName\.vscode\settings.json"),
+            $projectSettings[$projectName],
+            (New-Object Text.UTF8Encoding($false))
+        )
+    }
+    [void](New-Item -ItemType Directory -Path (Join-Path $testRoot "project_missing"))
+    [void](New-Item -ItemType File -Path (Join-Path $testRoot "project_missing\.zemiworkroot"))
     & $commandScript -InstancePath $testRoot
 
     $workspacePath = Join-Path $testRoot ((Split-Path -Leaf $testRoot) + ".code-workspace")
@@ -47,7 +55,8 @@ try {
         throw "The instance-named VS Code workspace was not created."
     }
     $workspace = Get-Content -LiteralPath $workspacePath -Raw -Encoding UTF8 | ConvertFrom-Json
-    if (@($workspace.folders.path) -join ',' -cne 'component_b,project_a') {
+    $expectedFolders = 'component_custom,component_empty,component_null,component_whitespace,project_missing'
+    if (@($workspace.folders.path) -join ',' -cne $expectedFolders) {
         throw "The workspace does not contain all marked roots."
     }
     if ($workspace.settings.PSObject.Properties["python.defaultInterpreterPath"] -or
@@ -58,10 +67,10 @@ try {
         throw "The workspace unexpectedly configures the terminal directory."
     }
 
-    foreach ($projectName in @("component_b", "project_a")) {
+    $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
+    foreach ($projectName in @("component_empty", "component_null", "component_whitespace", "project_missing")) {
         $settingsPath = Join-Path $testRoot "$projectName\.vscode\settings.json"
         $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
-        $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
         if ($settings.'python.defaultInterpreterPath' -cne $expectedPython) {
             throw "The project default Python interpreter is incorrect: $projectName"
         }
@@ -74,12 +83,32 @@ try {
         }
     }
     $componentSettings = Get-Content `
-        -LiteralPath (Join-Path $testRoot "component_b\.vscode\settings.json") `
+        -LiteralPath (Join-Path $testRoot "component_custom\.vscode\settings.json") `
         -Raw `
         -Encoding UTF8 |
         ConvertFrom-Json
+    if ($componentSettings.'python.defaultInterpreterPath' -cne "C:/custom/python.exe") {
+        throw "Project setup replaced a configured custom Python interpreter."
+    }
+    if ($componentSettings.'python.terminal.activateEnvironment' -cne $true) {
+        throw "Project setup did not enable Python environment activation."
+    }
     if ($componentSettings.'editor.formatOnSave' -ne $true) {
         throw "Project setup did not preserve unrelated VS Code settings."
+    }
+    if ($componentSettings.PSObject.Properties["python-envs.pythonProjects"] -or
+        $componentSettings.PSObject.Properties["python-envs.workspaceSearchPaths"]) {
+        throw "Project setup did not remove legacy Python Environments settings."
+    }
+
+    & $commandScript -InstancePath $testRoot
+    $componentSettings = Get-Content `
+        -LiteralPath (Join-Path $testRoot "component_custom\.vscode\settings.json") `
+        -Raw `
+        -Encoding UTF8 |
+        ConvertFrom-Json
+    if ($componentSettings.'python.defaultInterpreterPath' -cne "C:/custom/python.exe") {
+        throw "A repeated setup replaced a configured custom Python interpreter."
     }
 
     $invalidNameFailed = $false
