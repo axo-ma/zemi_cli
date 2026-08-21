@@ -88,3 +88,14 @@ are located directly in the expected roots.
 
 - Use standard Git only, without GitHub CLI.
 - Use the `main` branch.
+
+## Progress reporting for long code changes
+
+Apply the following reporting rules only to tasks that modify code and are
+expected to take longer than 30 seconds:
+
+- In intermediate updates, report the approximate overall progress as a
+  percentage.
+- When waiting for a command, test, build, agent, or another external process
+  to finish, explicitly state that work is waiting and that no tokens are being
+  consumed for reasoning during that wait.
