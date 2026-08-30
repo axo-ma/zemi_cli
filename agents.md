@@ -53,17 +53,11 @@ Store WinPython environments in `@inst/_pythons/<Python_directory_name>`.
 All WinPython directory names inside ZEMI must follow a single naming standard.
 The current WinPython version is 3.12; its standard directory name is `WPy64-312101`.
 
-### Component virtual environment
+### Project Python interpreter
 
-For Python work in this component, always use the `@comp/.venv` virtual
-environment created on top of WinPython at
-`@inst/_pythons/WPy64-312101/python`.
-
-- Run Python through `@comp/.venv/Scripts/python.exe`.
-- Install and verify Python dependencies only in `@comp/.venv`.
-- Run tests, scripts, and import checks with Python from `@comp/.venv`.
-- Do not use the system Python or the base WinPython interpreter directly unless
-  the task explicitly requires work on the base environment itself.
+For Python commands, use the interpreter configured in the current project's
+VS Code `python.defaultInterpreterPath` setting. Run tests, scripts, import
+checks, and dependency management through that interpreter.
 
 ## Standard markers
 
