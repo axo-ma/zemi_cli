@@ -66,6 +66,9 @@ try {
     if ($workspace.settings.PSObject.Properties["terminal.integrated.cwd"]) {
         throw "The workspace unexpectedly configures the terminal directory."
     }
+    if ($workspace.settings.'workbench.editorAssociations'.'*.md' -cne "vscode.markdown.preview.editor") {
+        throw "The workspace does not open Markdown files in the built-in preview editor."
+    }
 
     $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
     foreach ($projectName in @("component_empty", "component_null", "component_whitespace", "project_missing")) {

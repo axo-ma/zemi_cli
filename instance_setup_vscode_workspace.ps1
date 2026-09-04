@@ -276,6 +276,23 @@ foreach ($legacyName in @(
         $workspace.settings.PSObject.Properties.Remove($legacyName)
     }
 }
+$editorAssociationsProperty = $workspace.settings.PSObject.Properties["workbench.editorAssociations"]
+if (-not $editorAssociationsProperty -or $null -eq $editorAssociationsProperty.Value) {
+    $workspace.settings | Add-Member `
+        -MemberType NoteProperty `
+        -Name "workbench.editorAssociations" `
+        -Value ([PSCustomObject]@{}) `
+        -Force
+}
+elseif ($editorAssociationsProperty.Value -isnot [PSCustomObject]) {
+    throw "The existing workspace editor associations must contain a JSON object: $workspacePath"
+}
+$workspace.settings.'workbench.editorAssociations' | Add-Member `
+    -MemberType NoteProperty `
+    -Name "*.md" `
+    -Value "vscode.markdown.preview.editor" `
+    -Force
+
 foreach ($workspaceRoot in $workspaceRoots) {
     $projectSettingsPath = Join-Path $workspaceRoot.FullName ".vscode\settings.json"
     if ($PSCmdlet.ShouldProcess(
