@@ -8,7 +8,9 @@ Before creating a ZEMI Instance, prepare the workstation:
 2. **Visual Studio Code** — a standard or portable installation.
 3. Standard VS Code extensions:
    - Microsoft Python (`ms-python.python`);
-   - Microsoft Jupyter (`ms-toolsai.jupyter`).
+   - Microsoft Jupyter (`ms-toolsai.jupyter`);
+   - [Open with System Editor](https://marketplace.visualstudio.com/items?itemName=slaugaus.open-with-system)
+     (`slaugaus.open-with-system`) — opens files in the default system application.
 
    Microsoft Python usually installs these extensions automatically:
 
