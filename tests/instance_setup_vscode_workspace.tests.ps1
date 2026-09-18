@@ -70,6 +70,17 @@ try {
         throw "The workspace does not open Markdown files in the built-in preview editor."
     }
 
+    foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm")) {
+        if ($workspace.settings.'workbench.editorAssociations'.$pattern -cne "open-with-system") {
+            throw "The workspace does not open $pattern files in the system editor."
+        }
+    }
+
+    $workspace.settings | Add-Member -NotePropertyName "editor.formatOnSave" -NotePropertyValue $true
+    $workspace.settings.'workbench.editorAssociations' | Add-Member -NotePropertyName "*.csv" -NotePropertyValue "custom.editor"
+    $workspace.settings.'workbench.editorAssociations'.'*.xlsx' = "default"
+    [IO.File]::WriteAllText($workspacePath, ($workspace | ConvertTo-Json -Depth 20), (New-Object Text.UTF8Encoding($false)))
+
     $expectedPython = '${workspaceFolder}/../_venvs/default-WPy64-313100/Scripts/python.exe'
     foreach ($projectName in @("component_empty", "component_null", "component_whitespace", "project_missing")) {
         $settingsPath = Join-Path $testRoot "$projectName\.vscode\settings.json"
@@ -112,6 +123,20 @@ try {
         ConvertFrom-Json
     if ($componentSettings.'python.defaultInterpreterPath' -cne "C:/custom/python.exe") {
         throw "A repeated setup replaced a configured custom Python interpreter."
+    }
+
+    $workspace = Get-Content -LiteralPath $workspacePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($workspace.settings.'workbench.editorAssociations'.'*.md' -cne "vscode.markdown.preview.editor") {
+        throw "A repeated setup did not preserve Markdown preview."
+    }
+    foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm")) {
+        if ($workspace.settings.'workbench.editorAssociations'.$pattern -cne "open-with-system") {
+            throw "A repeated setup did not configure the system editor for $pattern."
+        }
+    }
+    if ($workspace.settings.'workbench.editorAssociations'.'*.csv' -cne "custom.editor" -or
+        $workspace.settings.'editor.formatOnSave' -ne $true) {
+        throw "A repeated setup did not preserve unrelated workspace settings."
     }
 
     $invalidNameFailed = $false

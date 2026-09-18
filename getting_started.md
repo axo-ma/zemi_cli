@@ -116,7 +116,9 @@ The command creates the default Python virtual environment in `@inst/_venvs`,
 creates `@inst/<instance-name>.code-workspace`, and configures every existing
 marked workspace root with its default Python interpreter and terminal
 activation settings. The generated multi-root workspace also opens `*.md` files in
-the built-in VS Code Markdown Preview editor by default.
+the built-in VS Code Markdown Preview editor by default. Excel files (`*.xlsx`,
+`*.xls`) and HTML files (`*.html`, `*.htm`) open in the default system application
+through the Open with System Editor extension.
 
 When it finishes, close VS Code, open `@inst/<instance-name>.code-workspace`,
 and confirm trust when VS Code displays the Workspace Trust prompt.

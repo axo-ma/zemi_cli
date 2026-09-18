@@ -293,6 +293,14 @@ $workspace.settings.'workbench.editorAssociations' | Add-Member `
     -Value "vscode.markdown.preview.editor" `
     -Force
 
+foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm")) {
+    $workspace.settings.'workbench.editorAssociations' | Add-Member `
+        -MemberType NoteProperty `
+        -Name $pattern `
+        -Value "open-with-system" `
+        -Force
+}
+
 foreach ($workspaceRoot in $workspaceRoots) {
     $projectSettingsPath = Join-Path $workspaceRoot.FullName ".vscode\settings.json"
     if ($PSCmdlet.ShouldProcess(
