@@ -64,7 +64,7 @@ switch ($commandPath.Trim()) {
         Write-ColoredCommand `
             -Prefix "zemi instance setup" `
             -Suffix "-vscode-workspace" `
-            -Description "Create the default Python venv and configure the Instance workspace and Markdown Preview."
+            -Description "Create the default Python venv and configure the Instance workspace, Markdown Preview and external Dataset CMD launchers."
         Write-Host ""
         Write-ColoredCommand `
             -Prefix "zemi component create" `
