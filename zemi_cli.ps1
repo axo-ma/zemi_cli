@@ -83,6 +83,7 @@ switch ($commandPath.Trim()) {
             -Highlight "reset-python-settings" `
             -Description "Reset Python and Jupyter settings for the active VS Code installation."
         Write-Host ""
+        Write-ColoredCommand -Prefix "zemi codex " -Highlight "install-zemi" -Description "Register ZEMI report tools in Codex and show restart instructions."
         Write-Host "DEBUG COMMANDS" -ForegroundColor Magenta
         Write-Host "  Commands in this section are intended only for debugging." -ForegroundColor DarkYellow
         Write-Host ""
@@ -99,6 +100,7 @@ switch ($commandPath.Trim()) {
         Write-Host ""
         return
     }
+    "codex install-zemi" { $scriptName = "codex_install_zemi.ps1" }
     "vscode install-zemi" { $scriptName = "vscode_install_zemi.ps1" }
     "component create" { $scriptName = "component_create.ps1" }
     "debug component set-default-python-venv" {

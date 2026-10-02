@@ -166,3 +166,7 @@ configures the Python interpreter used by VS Code.
 For recovery procedures and help with Component environments, interpreters,
 Jupyter kernels, ZEMI Instances, and VS Code, see the
 [ZEMI troubleshooting guide](troubleshooting.md).
+
+## Codex integration
+
+From a ZEMI Component, run `zemi codex install-zemi`. If Codex CLI is not on PATH, pass `-CodexCli "full path to codex.exe"`. The command uses the project Python interpreter and registers the component library MCP server, prints restart steps, and keeps other plugins enabled. Optional `-Manifest "module.chat.json" -Excel "workbook.xlsx"` selects the test conversation and workbook. Open actual reports with `zemi_report_show` and a report path. Complete specification: `zemi/docs/coding-agents/codex-integration.md`. Backend and UI updates do not require reinstallation; reopen the UI. Initial setup or transport/tool schema changes may require a Codex restart.
