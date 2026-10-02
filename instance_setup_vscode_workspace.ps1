@@ -293,7 +293,7 @@ $workspace.settings.'workbench.editorAssociations' | Add-Member `
     -Value "vscode.markdown.preview.editor" `
     -Force
 
-foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm", "*.dataset.cmd")) {
+foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm", "*.cmd")) {
     $workspace.settings.'workbench.editorAssociations' | Add-Member `
         -MemberType NoteProperty `
         -Name $pattern `

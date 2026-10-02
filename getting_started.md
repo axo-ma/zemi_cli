@@ -117,8 +117,8 @@ creates `@inst/<instance-name>.code-workspace`, and configures every existing
 marked workspace root with its default Python interpreter and terminal
 activation settings. The generated multi-root workspace also opens `*.md` files in
 the built-in VS Code Markdown Preview editor by default. Excel files (`*.xlsx`,
-`*.xls`), HTML files (`*.html`, `*.htm`) and Dataset Report launchers
-(`*.dataset.cmd`) open in the default system application
+`*.xls`), HTML files (`*.html`, `*.htm`) and Module Report launchers
+(`*.cmd`) open in the default system application
 through the Open with System Editor extension.
 
 When it finishes, close VS Code, open `@inst/<instance-name>.code-workspace`,

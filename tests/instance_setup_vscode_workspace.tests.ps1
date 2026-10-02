@@ -70,7 +70,7 @@ try {
         throw "The workspace does not open Markdown files in the built-in preview editor."
     }
 
-    foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm", "*.dataset.cmd")) {
+    foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm", "*.cmd")) {
         if ($workspace.settings.'workbench.editorAssociations'.$pattern -cne "open-with-system") {
             throw "The workspace does not open $pattern files in the system editor."
         }
@@ -129,7 +129,7 @@ try {
     if ($workspace.settings.'workbench.editorAssociations'.'*.md' -cne "vscode.markdown.preview.editor") {
         throw "A repeated setup did not preserve Markdown preview."
     }
-    foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm", "*.dataset.cmd")) {
+    foreach ($pattern in @("*.xlsx", "*.xls", "*.html", "*.htm", "*.cmd")) {
         if ($workspace.settings.'workbench.editorAssociations'.$pattern -cne "open-with-system") {
             throw "A repeated setup did not configure the system editor for $pattern."
         }
